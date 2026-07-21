@@ -14,14 +14,17 @@ import com.mohit.expensetracker.repository.UserRepository;
 public class AuthService {
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
+  private final JwtService jwtService;
 
   public AuthService(
-      UserRepository userRepository,
-      PasswordEncoder passwordEncoder) {
+        UserRepository userRepository,
+        PasswordEncoder passwordEncoder,
+        JwtService jwtService) {
 
     this.userRepository = userRepository;
     this.passwordEncoder = passwordEncoder;
-  }
+    this.jwtService = jwtService;
+}
 
   public void register(RegisterRequest request) {
 
@@ -55,7 +58,7 @@ public class AuthService {
     if (!passwordMatches) {
       throw new InvalidCredentialsException("Invalid email or password");
     }
-
-    return "Login successful";
+    
+    return jwtService.generateToken(user.getEmail());
   }
 }

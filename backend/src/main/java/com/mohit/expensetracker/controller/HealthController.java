@@ -10,4 +10,9 @@ public class HealthController {
     public String hello() {
         return "Hello Mohit! Backend is running.";
     }
+
+    @GetMapping("/protected")
+    public String protectedEndpoint() {
+        return "You accessed a protected endpoint";
+    }
 }

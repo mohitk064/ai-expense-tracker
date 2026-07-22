@@ -5,11 +5,12 @@ import org.springframework.stereotype.Service;
 import com.mohit.expensetracker.dto.ExpenseRequest;
 import com.mohit.expensetracker.entity.Expense;
 import com.mohit.expensetracker.entity.User;
+import com.mohit.expensetracker.exception.ExpenseNotFoundException;
+import com.mohit.expensetracker.exception.UnauthorizedExpenseAccessException;
 import com.mohit.expensetracker.repository.ExpenseRepository;
 import com.mohit.expensetracker.repository.UserRepository;
 import java.util.List;
 import com.mohit.expensetracker.dto.ExpenseResponse;
-
 
 @Service
 public class ExpenseService {
@@ -64,10 +65,11 @@ public class ExpenseService {
         .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
 
     Expense expense = expenseRepository.findById(expenseId)
-        .orElseThrow(() -> new RuntimeException("Expense not found"));
+        .orElseThrow(() -> new ExpenseNotFoundException("Expense not found"));
 
     if (!expense.getUser().getId().equals(user.getId())) {
-      throw new RuntimeException("You are not allowed to update this expense");
+      throw new UnauthorizedExpenseAccessException(
+          "You are not allowed to update this expense");
     }
 
     expense.setItem(request.getItem());
@@ -87,10 +89,11 @@ public class ExpenseService {
     User user = userRepository.findByEmail(email)
         .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
     Expense expense = expenseRepository.findById(expenseId)
-        .orElseThrow(() -> new RuntimeException("Expense not found"));
+        .orElseThrow(() -> new ExpenseNotFoundException("Expense not found"));
 
     if (!expense.getUser().getId().equals(user.getId())) {
-      throw new RuntimeException("You ar enot allowed to delete this expense");
+      throw new UnauthorizedExpenseAccessException(
+          "You are not allowed to update this expense");
     }
 
     expenseRepository.delete(expense);

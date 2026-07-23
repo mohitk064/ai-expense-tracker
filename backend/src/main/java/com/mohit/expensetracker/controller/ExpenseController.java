@@ -4,12 +4,14 @@ import java.security.Principal;
 
 import org.springframework.web.bind.annotation.*;
 
+import com.mohit.expensetracker.dto.ApiResponse;
 import com.mohit.expensetracker.dto.ExpenseRequest;
 import com.mohit.expensetracker.service.ExpenseService;
+
+import jakarta.validation.Valid;
+
 import java.util.List;
 import com.mohit.expensetracker.dto.ExpenseResponse;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping("/api/expenses")
@@ -22,34 +24,50 @@ public class ExpenseController {
   }
 
   @PostMapping
-  public String addExpense(
-      @RequestBody ExpenseRequest request,
+  public ApiResponse<ExpenseResponse> addExpense(@Valid @RequestBody ExpenseRequest request,
       Principal principal) {
 
-    expenseService.addExpense(request, principal.getName());
+    ExpenseResponse response = expenseService.addExpense(
+        request,
+        principal.getName());
 
-    return "Expense added successfully";
+    return new ApiResponse<>(
+        true,
+        "Expense added successfully",
+        response);
   }
 
   @GetMapping
-  public List<ExpenseResponse> getExpenses(Principal principal) {
-    return expenseService.getExpenses(principal.getName());
+  public ApiResponse<List<ExpenseResponse>> getExpenses(
+      Principal principal) {
+
+    List<ExpenseResponse> expenses = expenseService.getExpenses(principal.getName());
+
+    return new ApiResponse<>(
+        true,
+        "Expenses fetched successfully",
+        expenses);
   }
 
   @PutMapping("/{id}")
-  public ExpenseResponse updateExpense(
+  public ApiResponse<ExpenseResponse> updateExpense(
       @PathVariable Long id,
-      @RequestBody ExpenseRequest request,
+      @Valid @RequestBody ExpenseRequest request,
       Principal principal) {
 
-    return expenseService.updateExpense(
+    ExpenseResponse expenseResponse = expenseService.updateExpense(
         id,
         request,
         principal.getName());
+
+    return new ApiResponse<>(
+        true,
+        "Expense updated successfully",
+        expenseResponse);
   }
 
   @DeleteMapping("/{id}")
-  public String deleteExpense(
+  public ApiResponse<Void> deleteExpense(
       @PathVariable Long id,
       Principal principal) {
 
@@ -57,6 +75,9 @@ public class ExpenseController {
         id,
         principal.getName());
 
-    return "Expense deleted successfully";
+    return new ApiResponse<>(
+        true,
+        "Expense deleted successfully",
+        null);
   }
 }

@@ -3,6 +3,9 @@ package com.mohit.expensetracker.controller;
 import com.mohit.expensetracker.dto.RegisterRequest;
 import com.mohit.expensetracker.dto.LoginRequest;
 import com.mohit.expensetracker.service.AuthService;
+
+import jakarta.validation.Valid;
+
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -16,7 +19,7 @@ public class AuthController {
   }
 
   @PostMapping("/register")
-  public String register(@RequestBody RegisterRequest request) {
+  public String register(@Valid @RequestBody RegisterRequest request) {
 
     authService.register(request);
 
@@ -24,7 +27,7 @@ public class AuthController {
   }
 
   @PostMapping("/login")
-  public String login(@RequestBody LoginRequest request) {
+  public String login(@Valid @RequestBody LoginRequest request) {
 
     System.out.println("Login API called");
 

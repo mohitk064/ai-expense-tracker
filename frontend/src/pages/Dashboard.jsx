@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import AddExpenseForm from "../components/AddExpenseForm";
 
 import {
@@ -7,6 +8,8 @@ import {
 } from "../services/ExpenseService";
 
 function Dashboard() {
+  const navigate = useNavigate();
+
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -75,9 +78,21 @@ function Dashboard() {
     return <p>Loading...</p>;
   }
 
+  function handleLogout() {
+    localStorage.removeItem("token");
+    navigate("/login", { replace: true });
+  }
+
   return (
     <div>
       <h1>Expense Dashboard</h1>
+
+      <button
+        type="button"
+        onClick={handleLogout}
+      >
+        Logout
+      </button>
 
       <AddExpenseForm
         onExpenseAdded={handleExpenseAdded}

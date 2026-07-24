@@ -1,22 +1,33 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import Login from "./components/Login";
+import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
 
 function App() {
-  const token = localStorage.getItem("token");
-
   return (
     <Routes>
       <Route
         path="/"
-        element={<Navigate to={token ? "/dashboard" : "/login"} replace />}
+        element={<Navigate to="/dashboard" replace />}
       />
 
-      <Route path="/login" element={<Login />} />
+      <Route
+        path="/login"
+        element={<Login />}
+      />
 
       <Route
         path="/dashboard"
-        element={token ? <Dashboard /> : <Navigate to="/login" replace />}
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="*"
+        element={<Navigate to="/dashboard" replace />}
       />
     </Routes>
   );

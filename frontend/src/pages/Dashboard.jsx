@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react";
 import AddExpenseForm from "../components/AddExpenseForm";
+
 import {
-  deleteExpense,
   getExpenses,
+  deleteExpense,
 } from "../services/ExpenseService";
 
 function Dashboard() {
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [editingExpense, setEditingExpense] = useState(null);
 
   useEffect(() => {
     async function loadExpenses() {
@@ -16,7 +18,7 @@ function Dashboard() {
         const expenseData = await getExpenses();
         setExpenses(expenseData);
       } catch (error) {
-        console.error("Failed to fetch expenses:", error);
+        console.error(error);
         setError("Unable to load expenses");
       } finally {
         setLoading(false);
@@ -33,27 +35,44 @@ function Dashboard() {
     ]);
   }
 
-  async function handleDelete(id) {
-  console.log("Deleting expense:", id);
-
-  try {
-    await deleteExpense(id);
-
+  function handleExpenseUpdated(updatedExpense) {
     setExpenses((currentExpenses) =>
-      currentExpenses.filter(
-        (expense) => Number(expense.id) !== Number(id)
+      currentExpenses.map((expense) =>
+        Number(expense.id) === Number(updatedExpense.id)
+          ? updatedExpense
+          : expense
       )
     );
 
-    console.log("Delete successful");
-  } catch (error) {
-    console.error("Delete failed:", error);
-    setError("Unable to delete expense");
+    setEditingExpense(null);
   }
-}
+
+  async function handleDelete(id) {
+    try {
+      await deleteExpense(id);
+
+      setExpenses((currentExpenses) =>
+        currentExpenses.filter(
+          (expense) =>
+            Number(expense.id) !== Number(id)
+        )
+      );
+    } catch (error) {
+      console.error(error);
+      setError("Unable to delete expense");
+    }
+  }
+
+  function handleEdit(expense) {
+    setEditingExpense(expense);
+  }
+
+  function handleCancelEdit() {
+    setEditingExpense(null);
+  }
 
   if (loading) {
-    return <p>Loading expenses...</p>;
+    return <p>Loading...</p>;
   }
 
   return (
@@ -62,11 +81,12 @@ function Dashboard() {
 
       <AddExpenseForm
         onExpenseAdded={handleExpenseAdded}
+        onExpenseUpdated={handleExpenseUpdated}
+        editingExpense={editingExpense}
+        onCancelEdit={handleCancelEdit}
       />
 
       <hr />
-
-      <h2>Your Expenses</h2>
 
       {error && <p>{error}</p>}
 
@@ -89,7 +109,18 @@ function Dashboard() {
                 <td>{expense.item}</td>
                 <td>₹{expense.amount}</td>
                 <td>{expense.date}</td>
+
                 <td>
+                  <button
+                    onClick={() =>
+                      handleEdit(expense)
+                    }
+                  >
+                    Edit
+                  </button>
+
+                  {" "}
+
                   <button
                     onClick={() =>
                       handleDelete(expense.id)

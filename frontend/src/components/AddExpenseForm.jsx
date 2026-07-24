@@ -1,12 +1,38 @@
-import { useState } from "react";
-import { addExpense } from "../services/ExpenseService";
+import { useEffect, useState } from "react";
 
-function AddExpenseForm({ onExpenseAdded }) {
+import {
+  addExpense,
+  updateExpense,
+} from "../services/ExpenseService";
+
+function AddExpenseForm({
+  onExpenseAdded,
+  onExpenseUpdated,
+  editingExpense,
+  onCancelEdit,
+}) {
+
   const [item, setItem] = useState("");
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (editingExpense) {
+      setItem(editingExpense.item);
+      setAmount(editingExpense.amount);
+      setDate(editingExpense.date);
+    }
+  }, [editingExpense]);
+
+  function handleCancel() {
+    setItem("");
+    setAmount("");
+    setDate("");
+    setError("");
+    onCancelEdit();
+  }
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -21,19 +47,38 @@ function AddExpenseForm({ onExpenseAdded }) {
     };
 
     try {
-      const savedExpense = await addExpense(expenseRequest);
 
-      onExpenseAdded(savedExpense);
+      if (editingExpense) {
+
+        const updatedExpense =
+          await updateExpense(
+            editingExpense.id,
+            expenseRequest
+          );
+
+        onExpenseUpdated(updatedExpense);
+
+      } else {
+
+        const savedExpense =
+          await addExpense(expenseRequest);
+
+        onExpenseAdded(savedExpense);
+      }
 
       setItem("");
       setAmount("");
       setDate("");
+
     } catch (error) {
-      console.error("Failed to add expense:", error);
+
+      console.error(error);
 
       setError(
-        error.response?.data?.message || "Unable to add expense"
+        error.response?.data?.message ??
+        "Unable to save expense"
       );
+
     } finally {
       setSubmitting(false);
     }
@@ -41,60 +86,87 @@ function AddExpenseForm({ onExpenseAdded }) {
 
   return (
     <form onSubmit={handleSubmit}>
-      <h2>Add Expense</h2>
 
-      <div>
-        <label htmlFor="item">Item</label>
-        <br />
+      <h2>
+        {editingExpense
+          ? "Update Expense"
+          : "Add Expense"}
+      </h2>
 
-        <input
-          id="item"
-          type="text"
-          value={item}
-          onChange={(event) => setItem(event.target.value)}
-          required
-        />
-      </div>
+      <label>Item</label>
 
       <br />
 
-      <div>
-        <label htmlFor="amount">Amount</label>
-        <br />
+      <input
+        type="text"
+        value={item}
+        onChange={(event) =>
+          setItem(event.target.value)
+        }
+      />
 
-        <input
-          id="amount"
-          type="number"
-          value={amount}
-          onChange={(event) => setAmount(event.target.value)}
-          min="0.01"
-          step="0.01"
-          required
-        />
-      </div>
+      <br />
+      <br />
+
+      <label>Amount</label>
 
       <br />
 
-      <div>
-        <label htmlFor="date">Date</label>
-        <br />
+      <input
+        type="number"
+        value={amount}
+        onChange={(event) =>
+          setAmount(event.target.value)
+        }
+      />
 
-        <input
-          id="date"
-          type="date"
-          value={date}
-          onChange={(event) => setDate(event.target.value)}
-          required
-        />
-      </div>
+      <br />
+      <br />
+
+      <label>Date</label>
 
       <br />
 
-      <button type="submit" disabled={submitting}>
-        {submitting ? "Adding..." : "Add Expense"}
+      <input
+        type="date"
+        value={date}
+        onChange={(event) =>
+          setDate(event.target.value)
+        }
+      />
+
+      <br />
+      <br />
+
+      <button
+        type="submit"
+        disabled={submitting}
+      >
+        {submitting
+          ? editingExpense
+            ? "Updating..."
+            : "Adding..."
+          : editingExpense
+            ? "Update Expense"
+            : "Add Expense"}
       </button>
 
+      {editingExpense && (
+        <>
+          {" "}
+
+          <button
+            type="button"
+            onClick={handleCancel}
+            disabled={submitting}
+          >
+            Cancel
+          </button>
+        </>
+      )}
+
       {error && <p>{error}</p>}
+
     </form>
   );
 }

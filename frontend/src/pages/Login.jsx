@@ -1,33 +1,40 @@
 import axios from "axios";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { login } from "../services/AuthService";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
 function Login() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
   const navigate = useNavigate();
+  const location = useLocation();
 
   async function handleLogin() {
-  const loginRequest = {
-    email,
-    password,
-  };
+    const loginRequest = {
+      email,
+      password,
+    };
 
-  try {
-    const token = await login(loginRequest);
+    try {
+      const token = await login(loginRequest);
 
-    localStorage.setItem("token", token);
-    navigate("/dashboard");
-  } catch (error) {
-    console.error("Login failed:", error);
+      localStorage.setItem("token", token);
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Login failed:", error);
+    }
   }
-}
 
   return (
     <div>
       <h2>Login</h2>
+
+      {location.state?.message && (
+        <p>{location.state.message}</p>
+      )}
 
       <label>Email</label>
       <br />
@@ -58,7 +65,13 @@ function Login() {
       <button onClick={handleLogin}>
         Login
       </button>
+
+      <p>
+        Don't have an account?{" "}
+        <Link to="/register">Register</Link>
+      </p>
     </div>
+
   );
 }
 

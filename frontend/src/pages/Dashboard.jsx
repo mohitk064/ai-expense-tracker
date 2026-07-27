@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 import AddExpenseForm from "../components/AddExpenseForm";
+import ThemeToggle from "../components/ThemeToggle";
 
 import {
-  getExpenses,
   deleteExpense,
+  getExpenses,
 } from "../services/ExpenseService";
 
 function Dashboard() {
@@ -13,7 +15,8 @@ function Dashboard() {
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [editingExpense, setEditingExpense] = useState(null);
+  const [editingExpense, setEditingExpense] =
+    useState(null);
 
   useEffect(() => {
     async function loadExpenses() {
@@ -31,6 +34,14 @@ function Dashboard() {
     loadExpenses();
   }, []);
 
+  const totalExpenses = useMemo(() => {
+    return expenses.reduce(
+      (total, expense) =>
+        total + Number(expense.amount),
+      0
+    );
+  }, [expenses]);
+
   function handleExpenseAdded(savedExpense) {
     setExpenses((currentExpenses) => [
       savedExpense,
@@ -41,7 +52,8 @@ function Dashboard() {
   function handleExpenseUpdated(updatedExpense) {
     setExpenses((currentExpenses) =>
       currentExpenses.map((expense) =>
-        Number(expense.id) === Number(updatedExpense.id)
+        Number(expense.id) ===
+        Number(updatedExpense.id)
           ? updatedExpense
           : expense
       )
@@ -51,7 +63,17 @@ function Dashboard() {
   }
 
   async function handleDelete(id) {
+    const shouldDelete = window.confirm(
+      "Are you sure you want to delete this expense?"
+    );
+
+    if (!shouldDelete) {
+      return;
+    }
+
     try {
+      setError("");
+
       await deleteExpense(id);
 
       setExpenses((currentExpenses) =>
@@ -60,6 +82,12 @@ function Dashboard() {
             Number(expense.id) !== Number(id)
         )
       );
+
+      if (
+        Number(editingExpense?.id) === Number(id)
+      ) {
+        setEditingExpense(null);
+      }
     } catch (error) {
       console.error(error);
       setError("Unable to delete expense");
@@ -68,88 +96,254 @@ function Dashboard() {
 
   function handleEdit(expense) {
     setEditingExpense(expense);
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   }
 
   function handleCancelEdit() {
     setEditingExpense(null);
   }
 
-  if (loading) {
-    return <p>Loading...</p>;
-  }
-
   function handleLogout() {
     localStorage.removeItem("token");
-    navigate("/login", { replace: true });
+
+    navigate("/login", {
+      replace: true,
+    });
+  }
+
+  function formatDate(dateValue) {
+    if (!dateValue) {
+      return "";
+    }
+
+    const [year, month, day] = dateValue.split("-");
+
+    return new Date(
+      Number(year),
+      Number(month) - 1,
+      Number(day)
+    ).toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  }
+
+  if (loading) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-gray-100 transition-colors dark:bg-gray-950">
+        <div className="text-center">
+          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600 dark:border-gray-700 dark:border-t-blue-400" />
+
+          <p className="mt-4 text-lg font-medium text-gray-600 dark:text-gray-300">
+            Loading expenses...
+          </p>
+        </div>
+      </main>
+    );
   }
 
   return (
-    <div>
-      <h1>Expense Dashboard</h1>
+    <main className="min-h-screen bg-gray-100 transition-colors dark:bg-gray-950">
+      <header className="border-b border-gray-200 bg-white transition-colors dark:border-gray-800 dark:bg-gray-900">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              ExpenseAI
+            </h1>
 
-      <button
-        type="button"
-        onClick={handleLogout}
-      >
-        Logout
-      </button>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Track and understand your spending
+            </p>
+          </div>
 
-      <AddExpenseForm
-        onExpenseAdded={handleExpenseAdded}
-        onExpenseUpdated={handleExpenseUpdated}
-        editingExpense={editingExpense}
-        onCancelEdit={handleCancelEdit}
-      />
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
 
-      <hr />
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+      </header>
 
-      {error && <p>{error}</p>}
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+        <section className="mb-8">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+            Expense Dashboard
+          </h2>
 
-      {expenses.length === 0 ? (
-        <p>No expenses found.</p>
-      ) : (
-        <table border="1" cellPadding="10">
-          <thead>
-            <tr>
-              <th>Item</th>
-              <th>Amount</th>
-              <th>Date</th>
-              <th>Action</th>
-            </tr>
-          </thead>
+          <p className="mt-1 text-gray-500 dark:text-gray-400">
+            Manage your expenses and monitor your
+            spending.
+          </p>
+        </section>
 
-          <tbody>
-            {expenses.map((expense) => (
-              <tr key={expense.id}>
-                <td>{expense.item}</td>
-                <td>₹{expense.amount}</td>
-                <td>{expense.date}</td>
+        <section className="mb-8 grid gap-6 md:grid-cols-2">
+          <div className="rounded-2xl bg-white p-6 shadow-sm transition-colors dark:bg-gray-900 dark:shadow-black/20">
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+              Total expenses
+            </p>
 
-                <td>
-                  <button
-                    onClick={() =>
-                      handleEdit(expense)
-                    }
-                  >
-                    Edit
-                  </button>
+            <p className="mt-2 text-3xl font-bold text-gray-900 dark:text-white">
+              ₹
+              {totalExpenses.toLocaleString("en-IN", {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2,
+              })}
+            </p>
 
-                  {" "}
+            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+              Across {expenses.length} expense
+              {expenses.length === 1 ? "" : "s"}
+            </p>
+          </div>
 
-                  <button
-                    onClick={() =>
-                      handleDelete(expense.id)
-                    }
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-    </div>
+          <div className="rounded-2xl bg-blue-600 p-6 text-white shadow-sm dark:bg-blue-700">
+            <p className="text-sm font-medium text-blue-100">
+              AI insights
+            </p>
+
+            <p className="mt-2 text-xl font-semibold">
+              Spending analysis coming soon
+            </p>
+
+            <p className="mt-2 text-sm text-blue-100">
+              Your AI assistant will identify patterns
+              and suggest savings.
+            </p>
+          </div>
+        </section>
+
+        <section className="mb-8 rounded-2xl bg-white p-6 shadow-sm transition-colors dark:bg-gray-900 dark:shadow-black/20">
+          <h3 className="mb-5 text-xl font-semibold text-gray-900 dark:text-white">
+            {editingExpense
+              ? "Update expense"
+              : "Add expense"}
+          </h3>
+
+          <AddExpenseForm
+            onExpenseAdded={handleExpenseAdded}
+            onExpenseUpdated={handleExpenseUpdated}
+            editingExpense={editingExpense}
+            onCancelEdit={handleCancelEdit}
+          />
+        </section>
+
+        {error && (
+          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
+            {error}
+          </div>
+        )}
+
+        <section className="overflow-hidden rounded-2xl bg-white shadow-sm transition-colors dark:bg-gray-900 dark:shadow-black/20">
+          <div className="border-b border-gray-200 px-6 py-5 dark:border-gray-800">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+              Recent expenses
+            </h3>
+
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              View and manage your saved expenses.
+            </p>
+          </div>
+
+          {expenses.length === 0 ? (
+            <div className="px-6 py-16 text-center">
+              <div className="text-4xl">💰</div>
+
+              <p className="mt-4 text-lg font-medium text-gray-700 dark:text-gray-200">
+                No expenses found
+              </p>
+
+              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                Add your first expense using the form
+                above.
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead className="bg-gray-50 dark:bg-gray-800">
+                  <tr>
+                    <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Item
+                    </th>
+
+                    <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Amount
+                    </th>
+
+                    <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Date
+                    </th>
+
+                    <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
+                  {expenses.map((expense) => (
+                    <tr
+                      key={expense.id}
+                      className="transition hover:bg-gray-50 dark:hover:bg-gray-800/70"
+                    >
+                      <td className="px-6 py-4 font-medium text-gray-900 dark:text-gray-100">
+                        {expense.item}
+                      </td>
+
+                      <td className="px-6 py-4 text-gray-700 dark:text-gray-300">
+                        ₹
+                        {Number(
+                          expense.amount
+                        ).toLocaleString("en-IN")}
+                      </td>
+
+                      <td className="px-6 py-4 text-gray-500 dark:text-gray-400">
+                        {formatDate(expense.date)}
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <div className="flex justify-end gap-3">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleEdit(expense)
+                            }
+                            className="rounded-lg bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-700 transition hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-950/70"
+                          >
+                            Edit
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleDelete(expense.id)
+                            }
+                            className="rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100 dark:bg-red-950/40 dark:text-red-300 dark:hover:bg-red-950/70"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      </div>
+    </main>
   );
 }
 

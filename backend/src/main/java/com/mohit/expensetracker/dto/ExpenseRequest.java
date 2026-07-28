@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 import lombok.Setter;
+import com.mohit.expensetracker.entity.Category;
 
 @Getter
 @Setter
@@ -22,4 +23,6 @@ public class ExpenseRequest {
 
     @NotNull(message = "Date is required")
     private LocalDate date;
+
+    private Category category;
 }

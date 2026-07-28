@@ -4,6 +4,24 @@ import {
   addExpense,
   updateExpense,
 } from "../services/ExpenseService";
+import { ChevronDown } from "lucide-react";
+const CATEGORIES = [
+  "FOOD",
+  "TRAVEL",
+  "SHOPPING",
+  "BILLS",
+  "ENTERTAINMENT",
+  "HEALTH",
+  "EDUCATION",
+  "OTHER",
+];
+
+function formatCategory(category) {
+  return category
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
 
 function AddExpenseForm({
   onExpenseAdded,
@@ -14,6 +32,7 @@ function AddExpenseForm({
   const [item, setItem] = useState("");
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState("");
+  const [category, setCategory] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] =
     useState(false);
@@ -23,6 +42,7 @@ function AddExpenseForm({
       setItem(editingExpense.item);
       setAmount(editingExpense.amount);
       setDate(editingExpense.date);
+      setCategory(editingExpense.category || "");
     } else {
       clearForm();
     }
@@ -32,6 +52,7 @@ function AddExpenseForm({
     setItem("");
     setAmount("");
     setDate("");
+    setCategory("");
     setError("");
   }
 
@@ -44,6 +65,7 @@ function AddExpenseForm({
       item,
       amount: Number(amount),
       date,
+      category,
     };
 
     try {
@@ -70,7 +92,7 @@ function AddExpenseForm({
 
       setError(
         error.response?.data?.message ??
-          "Unable to save expense"
+        "Unable to save expense"
       );
     } finally {
       setSubmitting(false);
@@ -116,6 +138,47 @@ function AddExpenseForm({
             required
             className={inputClassName}
           />
+        </div>
+
+        <div className="md:col-span-2">
+          <label
+            htmlFor="category"
+            className={labelClassName}
+          >
+            Category
+          </label>
+
+          <div className="relative">
+            <select
+              id="category"
+              value={category}
+              onChange={(event) =>
+                setCategory(event.target.value)
+              }
+              required
+              className={`${inputClassName} appearance-none pr-12`}
+            >
+              <option value="">Select a category</option>
+
+              {CATEGORIES.map((category) => (
+                <option key={category} value={category}>
+                  {formatCategory(category)}
+                </option>
+              ))}
+            </select>
+
+            <ChevronDown
+              size={18}
+              aria-hidden="true"
+              className="
+        pointer-events-none
+        absolute right-5 top-1/2
+        -translate-y-1/2
+        text-gray-500
+        dark:text-gray-400
+      "
+            />
+          </div>
         </div>
 
         <div>

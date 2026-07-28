@@ -317,6 +317,10 @@ function Dashboard() {
                     </th>
 
                     <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Category
+                    </th>
+
+                    <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                       Amount
                     </th>
 
@@ -338,6 +342,12 @@ function Dashboard() {
                     >
                       <td className="px-6 py-4 font-medium text-gray-900 dark:text-gray-100">
                         {expense.item}
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <span className="inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
+                          {expense.category}
+                        </span>
                       </td>
 
                       <td className="px-6 py-4 text-gray-700 dark:text-gray-300">

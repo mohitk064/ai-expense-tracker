@@ -20,7 +20,14 @@ public class Expense {
   private String item;
   private BigDecimal amount;
   private LocalDate date;
+
+  @Enumerated(EnumType.STRING)
+  @Column
+  private Category category;
+
   @ManyToOne
   @JoinColumn(name = "user_id", nullable = false)
   private User user;
 }
+
+

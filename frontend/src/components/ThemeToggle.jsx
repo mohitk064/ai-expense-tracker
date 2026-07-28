@@ -1,3 +1,4 @@
+import { Moon, Sun } from "lucide-react";
 import { useTheme } from "../context/ThemeContext.jsx";
 
 function ThemeToggle() {
@@ -10,19 +11,26 @@ function ThemeToggle() {
       type="button"
       onClick={toggleTheme}
       aria-label={
-        isDarkMode
-          ? "Switch to light mode"
-          : "Switch to dark mode"
+        isDarkMode ? "Switch to light mode" : "Switch to dark mode"
       }
-      className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+      title={
+        isDarkMode ? "Switch to light mode" : "Switch to dark mode"
+      }
+      className="
+        flex h-10 w-10 items-center justify-center
+        rounded-lg border border-gray-300
+        bg-white text-gray-700
+        shadow-sm
+        transition-all duration-200
+        hover:bg-gray-100 hover:shadow
+        focus:outline-none focus:ring-2 focus:ring-blue-500
+        dark:border-gray-700
+        dark:bg-gray-800
+        dark:text-gray-200
+        dark:hover:bg-gray-700
+      "
     >
-      <span aria-hidden="true">
-        {isDarkMode ? "☀️" : "🌙"}
-      </span>
-
-      <span>
-        {isDarkMode ? "Light" : "Dark"}
-      </span>
+      {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
     </button>
   );
 }

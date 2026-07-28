@@ -1,8 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  LogOut,
+  WalletCards,
+  Pencil,
+  Trash2,
+  ReceiptText,
+  TrendingUp,
+  Sparkles,
+} from "lucide-react";
 
 import AddExpenseForm from "../components/AddExpenseForm";
 import ThemeToggle from "../components/ThemeToggle";
+import StatCard from "../components/StatCard";
 
 import {
   deleteExpense,
@@ -42,6 +52,14 @@ function Dashboard() {
     );
   }, [expenses]);
 
+  const averageExpense = useMemo(() => {
+    if (expenses.length === 0) {
+      return 0;
+    }
+
+    return totalExpenses / expenses.length;
+  }, [totalExpenses, expenses.length]);
+
   function handleExpenseAdded(savedExpense) {
     setExpenses((currentExpenses) => [
       savedExpense,
@@ -53,7 +71,7 @@ function Dashboard() {
     setExpenses((currentExpenses) =>
       currentExpenses.map((expense) =>
         Number(expense.id) ===
-        Number(updatedExpense.id)
+          Number(updatedExpense.id)
           ? updatedExpense
           : expense
       )
@@ -151,14 +169,20 @@ function Dashboard() {
     <main className="min-h-screen bg-gray-100 transition-colors dark:bg-gray-950">
       <header className="border-b border-gray-200 bg-white transition-colors dark:border-gray-800 dark:bg-gray-900">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              ExpenseAI
-            </h1>
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm">
+              <WalletCards size={23} />
+            </div>
 
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Track and understand your spending
-            </p>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                ExpenseAI
+              </h1>
+
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Track and understand your spending
+              </p>
+            </div>
           </div>
 
           <div className="flex items-center gap-3">
@@ -167,9 +191,23 @@ function Dashboard() {
             <button
               type="button"
               onClick={handleLogout}
-              className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+              className="
+    flex items-center gap-2
+    rounded-lg border border-gray-300
+    bg-white px-4 py-2
+    text-sm font-semibold text-gray-700
+    shadow-sm
+    transition-all duration-200
+    hover:bg-gray-100 hover:shadow
+    focus:outline-none focus:ring-2 focus:ring-blue-500
+    dark:border-gray-700
+    dark:bg-gray-800
+    dark:text-gray-200
+    dark:hover:bg-gray-700
+  "
             >
-              Logout
+              <LogOut size={17} />
+              <span>Logout</span>
             </button>
           </div>
         </div>
@@ -187,40 +225,41 @@ function Dashboard() {
           </p>
         </section>
 
-        <section className="mb-8 grid gap-6 md:grid-cols-2">
-          <div className="rounded-2xl bg-white p-6 shadow-sm transition-colors dark:bg-gray-900 dark:shadow-black/20">
-            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-              Total expenses
-            </p>
+        <section className="mb-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <StatCard
+            title="Total spent"
+            value={`₹${totalExpenses.toLocaleString("en-IN", {
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 2,
+            })}`}
+            description="Across all saved expenses"
+            icon={<WalletCards size={22} />}
+          />
 
-            <p className="mt-2 text-3xl font-bold text-gray-900 dark:text-white">
-              ₹
-              {totalExpenses.toLocaleString("en-IN", {
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 2,
-              })}
-            </p>
+          <StatCard
+            title="Transactions"
+            value={expenses.length}
+            description={`${expenses.length} saved expense${expenses.length === 1 ? "" : "s"
+              }`}
+            icon={<ReceiptText size={22} />}
+          />
 
-            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-              Across {expenses.length} expense
-              {expenses.length === 1 ? "" : "s"}
-            </p>
-          </div>
+          <StatCard
+            title="Average expense"
+            value={`₹${averageExpense.toLocaleString("en-IN", {
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 2,
+            })}`}
+            description="Average amount per transaction"
+            icon={<TrendingUp size={22} />}
+          />
 
-          <div className="rounded-2xl bg-blue-600 p-6 text-white shadow-sm dark:bg-blue-700">
-            <p className="text-sm font-medium text-blue-100">
-              AI insights
-            </p>
-
-            <p className="mt-2 text-xl font-semibold">
-              Spending analysis coming soon
-            </p>
-
-            <p className="mt-2 text-sm text-blue-100">
-              Your AI assistant will identify patterns
-              and suggest savings.
-            </p>
-          </div>
+          <StatCard
+            title="AI status"
+            value="Coming soon"
+            description="Smart analysis is the next phase"
+            icon={<Sparkles size={22} />}
+          />
         </section>
 
         <section className="mb-8 rounded-2xl bg-white p-6 shadow-sm transition-colors dark:bg-gray-900 dark:shadow-black/20">
@@ -316,22 +355,20 @@ function Dashboard() {
                         <div className="flex justify-end gap-3">
                           <button
                             type="button"
-                            onClick={() =>
-                              handleEdit(expense)
-                            }
-                            className="rounded-lg bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-700 transition hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-950/70"
+                            onClick={() => handleEdit(expense)}
+                            className="flex items-center gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-700 transition hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-950/70"
                           >
-                            Edit
+                            <Pencil size={16} />
+                            <span>Edit</span>
                           </button>
 
                           <button
                             type="button"
-                            onClick={() =>
-                              handleDelete(expense.id)
-                            }
-                            className="rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100 dark:bg-red-950/40 dark:text-red-300 dark:hover:bg-red-950/70"
+                            onClick={() => handleDelete(expense.id)}
+                            className="flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100 dark:bg-red-950/40 dark:text-red-300 dark:hover:bg-red-950/70"
                           >
-                            Delete
+                            <Trash2 size={16} />
+                            <span>Delete</span>
                           </button>
                         </div>
                       </td>

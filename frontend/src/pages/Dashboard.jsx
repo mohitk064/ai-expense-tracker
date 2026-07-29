@@ -14,6 +14,7 @@ import AddExpenseForm from "../components/AddExpenseForm";
 import ThemeToggle from "../components/ThemeToggle";
 import StatCard from "../components/StatCard";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
+import toast from "react-hot-toast";
 
 import {
   deleteExpense,
@@ -40,6 +41,7 @@ function Dashboard() {
       } catch (error) {
         console.error(error);
         setError("Unable to load expenses");
+        toast.error("Unable to load expenses");
       } finally {
         setLoading(false);
       }
@@ -109,8 +111,7 @@ function Dashboard() {
       setExpenses((currentExpenses) =>
         currentExpenses.filter(
           (expense) =>
-            Number(expense.id) !==
-            Number(expenseToDelete.id)
+            Number(expense.id) !== Number(expenseToDelete.id)
         )
       );
 
@@ -121,10 +122,14 @@ function Dashboard() {
         setEditingExpense(null);
       }
 
+      toast.success(
+        `${expenseToDelete.item} deleted successfully`
+      );
+
       setExpenseToDelete(null);
     } catch (error) {
       console.error(error);
-      setError("Unable to delete expense");
+      toast.error("Unable to delete expense");
     } finally {
       setDeleting(false);
     }
@@ -145,6 +150,8 @@ function Dashboard() {
 
   function handleLogout() {
     localStorage.removeItem("token");
+
+    toast.success("Logged out successfully");
 
     navigate("/login", {
       replace: true,
@@ -441,7 +448,7 @@ function Dashboard() {
           )}
         </section>
       </div>
-      
+
       <DeleteConfirmationModal
         isOpen={Boolean(expenseToDelete)}
         expense={expenseToDelete}

@@ -15,6 +15,7 @@ const CATEGORIES = [
   "EDUCATION",
   "OTHER",
 ];
+import toast from "react-hot-toast";
 
 function formatCategory(category) {
   return category
@@ -78,23 +79,28 @@ function AddExpenseForm({
         );
 
         onExpenseUpdated(updatedExpense);
+        toast.success("Expense updated successfully!");
       } else {
         const savedExpense = await addExpense(
           expenseRequest
         );
 
         onExpenseAdded(savedExpense);
+        toast.success("Expense added successfully!");
       }
 
       clearForm();
+
     } catch (error) {
       console.error("Expense operation failed:", error);
 
-      setError(
+      const message =
         error.response?.data?.message ??
-        "Unable to save expense"
-      );
-    } finally {
+        "Unable to save expense";
+
+      setError(message);
+      toast.error(message);
+    }finally {
       setSubmitting(false);
     }
   }

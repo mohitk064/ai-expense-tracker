@@ -13,6 +13,7 @@ import {
 import AddExpenseForm from "../components/AddExpenseForm";
 import ThemeToggle from "../components/ThemeToggle";
 import StatCard from "../components/StatCard";
+import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 
 import {
   deleteExpense,
@@ -27,6 +28,9 @@ function Dashboard() {
   const [error, setError] = useState("");
   const [editingExpense, setEditingExpense] =
     useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [expenseToDelete, setExpenseToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     async function loadExpenses() {
@@ -70,8 +74,7 @@ function Dashboard() {
   function handleExpenseUpdated(updatedExpense) {
     setExpenses((currentExpenses) =>
       currentExpenses.map((expense) =>
-        Number(expense.id) ===
-          Number(updatedExpense.id)
+        Number(expense.id) === Number(updatedExpense.id)
           ? updatedExpense
           : expense
       )
@@ -80,35 +83,50 @@ function Dashboard() {
     setEditingExpense(null);
   }
 
-  async function handleDelete(id) {
-    const shouldDelete = window.confirm(
-      "Are you sure you want to delete this expense?"
-    );
+  function handleDeleteRequest(expense) {
+    setExpenseToDelete(expense);
+  }
 
-    if (!shouldDelete) {
+  function handleDeleteCancel() {
+    if (deleting) {
+      return;
+    }
+
+    setExpenseToDelete(null);
+  }
+
+  async function handleDeleteConfirm() {
+    if (!expenseToDelete) {
       return;
     }
 
     try {
+      setDeleting(true);
       setError("");
 
-      await deleteExpense(id);
+      await deleteExpense(expenseToDelete.id);
 
       setExpenses((currentExpenses) =>
         currentExpenses.filter(
           (expense) =>
-            Number(expense.id) !== Number(id)
+            Number(expense.id) !==
+            Number(expenseToDelete.id)
         )
       );
 
       if (
-        Number(editingExpense?.id) === Number(id)
+        Number(editingExpense?.id) ===
+        Number(expenseToDelete.id)
       ) {
         setEditingExpense(null);
       }
+
+      setExpenseToDelete(null);
     } catch (error) {
       console.error(error);
       setError("Unable to delete expense");
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -150,6 +168,10 @@ function Dashboard() {
       year: "numeric",
     });
   }
+
+  const filteredExpenses = expenses.filter((expense) =>
+    expense.item.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   if (loading) {
     return (
@@ -294,6 +316,16 @@ function Dashboard() {
             </p>
           </div>
 
+          <div className="mb-6">
+            <input
+              type="text"
+              placeholder="🔍 Search expenses..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-blue-400 dark:focus:ring-blue-900"
+            />
+          </div>
+
           {expenses.length === 0 ? (
             <div className="px-6 py-16 text-center">
               <div className="text-4xl">💰</div>
@@ -335,61 +367,88 @@ function Dashboard() {
                 </thead>
 
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-                  {expenses.map((expense) => (
-                    <tr
-                      key={expense.id}
-                      className="transition hover:bg-gray-50 dark:hover:bg-gray-800/70"
-                    >
-                      <td className="px-6 py-4 font-medium text-gray-900 dark:text-gray-100">
-                        {expense.item}
-                      </td>
+                  {filteredExpenses.length > 0 ? (
+                    filteredExpenses.map((expense) => (
+                      <tr
+                        key={expense.id}
+                        className="transition hover:bg-gray-50 dark:hover:bg-gray-800/70"
+                      >
+                        <td className="px-6 py-4 font-medium text-gray-900 dark:text-gray-100">
+                          {expense.item}
+                        </td>
 
-                      <td className="px-6 py-4">
-                        <span className="inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
-                          {expense.category}
-                        </span>
-                      </td>
+                        <td className="px-6 py-4">
+                          <span className="inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
+                            {expense.category}
+                          </span>
+                        </td>
 
-                      <td className="px-6 py-4 text-gray-700 dark:text-gray-300">
-                        ₹
-                        {Number(
-                          expense.amount
-                        ).toLocaleString("en-IN")}
-                      </td>
+                        <td className="px-6 py-4 text-gray-700 dark:text-gray-300">
+                          ₹
+                          {Number(
+                            expense.amount
+                          ).toLocaleString("en-IN")}
+                        </td>
 
-                      <td className="px-6 py-4 text-gray-500 dark:text-gray-400">
-                        {formatDate(expense.date)}
-                      </td>
+                        <td className="px-6 py-4 text-gray-500 dark:text-gray-400">
+                          {formatDate(expense.date)}
+                        </td>
 
-                      <td className="px-6 py-4">
-                        <div className="flex justify-end gap-3">
-                          <button
-                            type="button"
-                            onClick={() => handleEdit(expense)}
-                            className="flex items-center gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-700 transition hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-950/70"
-                          >
-                            <Pencil size={16} />
-                            <span>Edit</span>
-                          </button>
+                        <td className="px-6 py-4">
+                          <div className="flex justify-end gap-3">
+                            <button
+                              type="button"
+                              onClick={() => handleEdit(expense)}
+                              className="flex items-center gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-700 transition hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-950/70"
+                            >
+                              <Pencil size={16} />
+                              <span>Edit</span>
+                            </button>
 
-                          <button
-                            type="button"
-                            onClick={() => handleDelete(expense.id)}
-                            className="flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100 dark:bg-red-950/40 dark:text-red-300 dark:hover:bg-red-950/70"
-                          >
-                            <Trash2 size={16} />
-                            <span>Delete</span>
-                          </button>
-                        </div>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteRequest(expense)}
+                              className="flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100 dark:bg-red-950/40 dark:text-red-300 dark:hover:bg-red-950/70"
+                            >
+                              <Trash2 size={16} />
+                              <span>Delete</span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan="5"
+                        className="py-10 text-center"
+                      >
+                        <div className="text-4xl">🔍</div>
+
+                        <p className="mt-3 font-semibold text-gray-700 dark:text-gray-200">
+                          No matching expenses
+                        </p>
+
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          Try a different search.
+                        </p>
                       </td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
             </div>
           )}
         </section>
       </div>
+      
+      <DeleteConfirmationModal
+        isOpen={Boolean(expenseToDelete)}
+        expense={expenseToDelete}
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+        deleting={deleting}
+      />
     </main>
   );
 }

@@ -1,20 +1,24 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+  IndianRupee,
   LogOut,
-  WalletCards,
   Pencil,
-  Trash2,
   ReceiptText,
-  TrendingUp,
   Sparkles,
+  Trash2,
+  TrendingUp,
+  Trophy,
+  WalletCards,
 } from "lucide-react";
+import toast from "react-hot-toast";
 
 import AddExpenseForm from "../components/AddExpenseForm";
-import ThemeToggle from "../components/ThemeToggle";
-import StatCard from "../components/StatCard";
+import CategoryPieChart from "../components/charts/CategoryPieChart";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
-import toast from "react-hot-toast";
+import StatCard from "../components/StatCard";
+import ThemeToggle from "../components/ThemeToggle";
+import MonthlyBarChart from "../components/charts/MonthlyBarChart";
 
 import {
   deleteExpense,
@@ -30,7 +34,8 @@ function Dashboard() {
   const [editingExpense, setEditingExpense] =
     useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [expenseToDelete, setExpenseToDelete] = useState(null);
+  const [expenseToDelete, setExpenseToDelete] =
+    useState(null);
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
@@ -66,6 +71,80 @@ function Dashboard() {
     return totalExpenses / expenses.length;
   }, [totalExpenses, expenses.length]);
 
+  const highestExpense = useMemo(() => {
+    if (expenses.length === 0) {
+      return null;
+    }
+
+    return expenses.reduce((highest, expense) =>
+      Number(expense.amount) >
+        Number(highest.amount)
+        ? expense
+        : highest
+    );
+  }, [expenses]);
+
+  const topCategory = useMemo(() => {
+    if (expenses.length === 0) {
+      return null;
+    }
+
+    const categoryTotals = expenses.reduce(
+      (totals, expense) => {
+        const category =
+          expense.category || "OTHER";
+
+        totals[category] =
+          (totals[category] || 0) +
+          Number(expense.amount);
+
+        return totals;
+      },
+      {}
+    );
+
+    return Object.entries(categoryTotals).reduce(
+      (highest, current) =>
+        current[1] > highest[1]
+          ? current
+          : highest
+    );
+  }, [expenses]);
+
+  const filteredExpenses = useMemo(() => {
+    const search = searchTerm
+      .trim()
+      .toLowerCase();
+
+    if (!search) {
+      return expenses;
+    }
+
+    return expenses.filter((expense) => {
+      const item = expense.item
+        ?.toLowerCase() ?? "";
+
+      const category = formatCategory(
+        expense.category || "OTHER"
+      ).toLowerCase();
+
+      const amount = String(
+        expense.amount ?? ""
+      ).toLowerCase();
+
+      const date = String(
+        expense.date ?? ""
+      ).toLowerCase();
+
+      return (
+        item.includes(search) ||
+        category.includes(search) ||
+        amount.includes(search) ||
+        date.includes(search)
+      );
+    });
+  }, [expenses, searchTerm]);
+
   function handleExpenseAdded(savedExpense) {
     setExpenses((currentExpenses) => [
       savedExpense,
@@ -76,7 +155,8 @@ function Dashboard() {
   function handleExpenseUpdated(updatedExpense) {
     setExpenses((currentExpenses) =>
       currentExpenses.map((expense) =>
-        Number(expense.id) === Number(updatedExpense.id)
+        Number(expense.id) ===
+          Number(updatedExpense.id)
           ? updatedExpense
           : expense
       )
@@ -111,7 +191,8 @@ function Dashboard() {
       setExpenses((currentExpenses) =>
         currentExpenses.filter(
           (expense) =>
-            Number(expense.id) !== Number(expenseToDelete.id)
+            Number(expense.id) !==
+            Number(expenseToDelete.id)
         )
       );
 
@@ -163,7 +244,8 @@ function Dashboard() {
       return "";
     }
 
-    const [year, month, day] = dateValue.split("-");
+    const [year, month, day] =
+      dateValue.split("-");
 
     return new Date(
       Number(year),
@@ -176,9 +258,38 @@ function Dashboard() {
     });
   }
 
-  const filteredExpenses = expenses.filter((expense) =>
-    expense.item.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  function formatCategory(category) {
+    return category
+      .toLowerCase()
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (letter) =>
+        letter.toUpperCase()
+      );
+  }
+
+  function formatCurrency(value) {
+    return `₹${Number(value).toLocaleString(
+      "en-IN",
+      {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+      }
+    )}`;
+  }
+
+  const insightCardClassName = `
+    rounded-xl
+    bg-gray-50
+    p-4
+    transition-all
+    duration-200
+    hover:-translate-y-1
+    hover:scale-[1.02]
+    hover:bg-gray-100
+    hover:shadow-lg
+    dark:bg-gray-800
+    dark:hover:bg-gray-700
+  `;
 
   if (loading) {
     return (
@@ -220,20 +331,7 @@ function Dashboard() {
             <button
               type="button"
               onClick={handleLogout}
-              className="
-    flex items-center gap-2
-    rounded-lg border border-gray-300
-    bg-white px-4 py-2
-    text-sm font-semibold text-gray-700
-    shadow-sm
-    transition-all duration-200
-    hover:bg-gray-100 hover:shadow
-    focus:outline-none focus:ring-2 focus:ring-blue-500
-    dark:border-gray-700
-    dark:bg-gray-800
-    dark:text-gray-200
-    dark:hover:bg-gray-700
-  "
+              className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm transition-all duration-200 hover:bg-gray-100 hover:shadow focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
             >
               <LogOut size={17} />
               <span>Logout</span>
@@ -257,10 +355,7 @@ function Dashboard() {
         <section className="mb-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
             title="Total spent"
-            value={`₹${totalExpenses.toLocaleString("en-IN", {
-              minimumFractionDigits: 0,
-              maximumFractionDigits: 2,
-            })}`}
+            value={formatCurrency(totalExpenses)}
             description="Across all saved expenses"
             icon={<WalletCards size={22} />}
           />
@@ -268,17 +363,15 @@ function Dashboard() {
           <StatCard
             title="Transactions"
             value={expenses.length}
-            description={`${expenses.length} saved expense${expenses.length === 1 ? "" : "s"
+            description={`${expenses.length
+              } saved expense${expenses.length === 1 ? "" : "s"
               }`}
             icon={<ReceiptText size={22} />}
           />
 
           <StatCard
             title="Average expense"
-            value={`₹${averageExpense.toLocaleString("en-IN", {
-              minimumFractionDigits: 0,
-              maximumFractionDigits: 2,
-            })}`}
+            value={formatCurrency(averageExpense)}
             description="Average amount per transaction"
             icon={<TrendingUp size={22} />}
           />
@@ -291,6 +384,146 @@ function Dashboard() {
           />
         </section>
 
+        <section className="mb-8 grid gap-6 lg:grid-cols-3">
+          <div className="rounded-2xl bg-white p-6 shadow-sm transition-colors dark:bg-gray-900 dark:shadow-black/20 lg:col-span-2">
+            <div className="mb-2">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                Spending by category
+              </h3>
+
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                See which categories account for
+                most of your spending.
+              </p>
+            </div>
+
+            <CategoryPieChart
+              expenses={expenses}
+            />
+          </div>
+
+          <div className="rounded-2xl bg-white p-6 shadow-sm transition-colors dark:bg-gray-900 dark:shadow-black/20">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+              Quick insights
+            </h3>
+
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              A snapshot of your expense activity.
+            </p>
+
+            <div className="mt-6 space-y-4">
+              <div className={insightCardClassName}>
+                <div className="flex items-start gap-3">
+                  <div className="rounded-lg bg-yellow-100 p-2 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400">
+                    <Trophy size={20} />
+                  </div>
+
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Top spending category
+                    </p>
+
+                    <p className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
+                      {topCategory
+                        ? formatCategory(
+                          topCategory[0]
+                        )
+                        : "No data"}
+                    </p>
+
+                    {topCategory && (
+                      <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        {formatCurrency(
+                          topCategory[1]
+                        )}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className={insightCardClassName}>
+                <div className="flex items-start gap-3">
+                  <div className="rounded-lg bg-green-100 p-2 text-green-600 dark:bg-green-900/30 dark:text-green-400">
+                    <IndianRupee size={20} />
+                  </div>
+
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Highest expense
+                    </p>
+
+                    <p className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
+                      {highestExpense
+                        ? highestExpense.item
+                        : "No data"}
+                    </p>
+
+                    {highestExpense && (
+                      <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        {formatCurrency(
+                          highestExpense.amount
+                        )}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className={insightCardClassName}>
+                <div className="flex items-start gap-3">
+                  <div className="rounded-lg bg-blue-100 p-2 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+                    <TrendingUp size={20} />
+                  </div>
+
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Average transaction
+                    </p>
+
+                    <p className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
+                      {formatCurrency(
+                        averageExpense
+                      )}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className={insightCardClassName}>
+                <div className="flex items-start gap-3">
+                  <div className="rounded-lg bg-purple-100 p-2 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400">
+                    <ReceiptText size={20} />
+                  </div>
+
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Total transactions
+                    </p>
+
+                    <p className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
+                      {expenses.length}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section className="mb-8 rounded-2xl bg-white p-6 shadow-sm transition-colors dark:bg-gray-900 dark:shadow-black/20">
+          <div className="mb-5">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+              Monthly Spending Trend
+            </h3>
+
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Track how your expenses change month by month.
+            </p>
+          </div>
+
+          <MonthlyBarChart expenses={expenses} />
+        </section>
+
         <section className="mb-8 rounded-2xl bg-white p-6 shadow-sm transition-colors dark:bg-gray-900 dark:shadow-black/20">
           <h3 className="mb-5 text-xl font-semibold text-gray-900 dark:text-white">
             {editingExpense
@@ -300,7 +533,9 @@ function Dashboard() {
 
           <AddExpenseForm
             onExpenseAdded={handleExpenseAdded}
-            onExpenseUpdated={handleExpenseUpdated}
+            onExpenseUpdated={
+              handleExpenseUpdated
+            }
             editingExpense={editingExpense}
             onCancelEdit={handleCancelEdit}
           />
@@ -323,12 +558,14 @@ function Dashboard() {
             </p>
           </div>
 
-          <div className="mb-6">
+          <div className="px-6 py-5">
             <input
               type="text"
-              placeholder="🔍 Search expenses..."
+              placeholder="🔍 Search by item, category, amount, or date..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(event) =>
+                setSearchTerm(event.target.value)
+              }
               className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-blue-400 dark:focus:ring-blue-900"
             />
           </div>
@@ -342,8 +579,8 @@ function Dashboard() {
               </p>
 
               <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                Add your first expense using the form
-                above.
+                Add your first expense using the
+                form above.
               </p>
             </div>
           ) : (
@@ -375,69 +612,92 @@ function Dashboard() {
 
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
                   {filteredExpenses.length > 0 ? (
-                    filteredExpenses.map((expense) => (
-                      <tr
-                        key={expense.id}
-                        className="transition hover:bg-gray-50 dark:hover:bg-gray-800/70"
-                      >
-                        <td className="px-6 py-4 font-medium text-gray-900 dark:text-gray-100">
-                          {expense.item}
-                        </td>
+                    filteredExpenses.map(
+                      (expense) => (
+                        <tr
+                          key={expense.id}
+                          className="transition hover:bg-gray-50 dark:hover:bg-gray-800/70"
+                        >
+                          <td className="px-6 py-4 font-medium text-gray-900 dark:text-gray-100">
+                            {expense.item}
+                          </td>
 
-                        <td className="px-6 py-4">
-                          <span className="inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
-                            {expense.category}
-                          </span>
-                        </td>
+                          <td className="px-6 py-4">
+                            <span className="inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
+                              {formatCategory(
+                                expense.category ||
+                                "OTHER"
+                              )}
+                            </span>
+                          </td>
 
-                        <td className="px-6 py-4 text-gray-700 dark:text-gray-300">
-                          ₹
-                          {Number(
-                            expense.amount
-                          ).toLocaleString("en-IN")}
-                        </td>
+                          <td className="px-6 py-4 text-gray-700 dark:text-gray-300">
+                            {formatCurrency(
+                              expense.amount
+                            )}
+                          </td>
 
-                        <td className="px-6 py-4 text-gray-500 dark:text-gray-400">
-                          {formatDate(expense.date)}
-                        </td>
+                          <td className="px-6 py-4 text-gray-500 dark:text-gray-400">
+                            {formatDate(
+                              expense.date
+                            )}
+                          </td>
 
-                        <td className="px-6 py-4">
-                          <div className="flex justify-end gap-3">
-                            <button
-                              type="button"
-                              onClick={() => handleEdit(expense)}
-                              className="flex items-center gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-700 transition hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-950/70"
-                            >
-                              <Pencil size={16} />
-                              <span>Edit</span>
-                            </button>
+                          <td className="px-6 py-4">
+                            <div className="flex justify-end gap-3">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleEdit(
+                                    expense
+                                  )
+                                }
+                                className="flex items-center gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-700 transition hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-950/70"
+                              >
+                                <Pencil
+                                  size={16}
+                                />
+                                <span>Edit</span>
+                              </button>
 
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteRequest(expense)}
-                              className="flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100 dark:bg-red-950/40 dark:text-red-300 dark:hover:bg-red-950/70"
-                            >
-                              <Trash2 size={16} />
-                              <span>Delete</span>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleDeleteRequest(
+                                    expense
+                                  )
+                                }
+                                className="flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100 dark:bg-red-950/40 dark:text-red-300 dark:hover:bg-red-950/70"
+                              >
+                                <Trash2
+                                  size={16}
+                                />
+                                <span>
+                                  Delete
+                                </span>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    )
                   ) : (
                     <tr>
                       <td
                         colSpan="5"
                         className="py-10 text-center"
                       >
-                        <div className="text-4xl">🔍</div>
+                        <div className="text-4xl">
+                          🔍
+                        </div>
 
                         <p className="mt-3 font-semibold text-gray-700 dark:text-gray-200">
                           No matching expenses
                         </p>
 
                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                          Try a different search.
+                          Try changing or clearing
+                          your search.
                         </p>
                       </td>
                     </tr>

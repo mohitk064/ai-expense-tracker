@@ -15,15 +15,77 @@ import toast from "react-hot-toast";
 
 import AddExpenseForm from "../components/AddExpenseForm";
 import CategoryPieChart from "../components/charts/CategoryPieChart";
+import MonthlyBarChart from "../components/charts/MonthlyBarChart";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 import StatCard from "../components/StatCard";
 import ThemeToggle from "../components/ThemeToggle";
-import MonthlyBarChart from "../components/charts/MonthlyBarChart";
 
 import {
   deleteExpense,
   getExpenses,
 } from "../services/ExpenseService";
+
+const CATEGORIES = [
+  "FOOD",
+  "TRAVEL",
+  "SHOPPING",
+  "BILLS",
+  "ENTERTAINMENT",
+  "HEALTH",
+  "EDUCATION",
+  "OTHER",
+];
+
+const insightCardClassName = `
+  rounded-xl
+  bg-gray-50
+  p-4
+  transition-all
+  duration-200
+  hover:-translate-y-1
+  hover:scale-[1.02]
+  hover:bg-gray-100
+  hover:shadow-lg
+  dark:bg-gray-800
+  dark:hover:bg-gray-700
+`;
+
+function formatDate(dateValue) {
+  if (!dateValue) {
+    return "";
+  }
+
+  const [year, month, day] = dateValue.split("-");
+
+  return new Date(
+    Number(year),
+    Number(month) - 1,
+    Number(day)
+  ).toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function formatCategory(category) {
+  return category
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (letter) =>
+      letter.toUpperCase()
+    );
+}
+
+function formatCurrency(value) {
+  return `₹${Number(value).toLocaleString(
+    "en-IN",
+    {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }
+  )}`;
+}
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -37,6 +99,8 @@ function Dashboard() {
   const [expenseToDelete, setExpenseToDelete] =
     useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [selectedCategory, setSelectedCategory] =
+    useState("ALL");
 
   useEffect(() => {
     async function loadExpenses() {
@@ -55,74 +119,19 @@ function Dashboard() {
     loadExpenses();
   }, []);
 
-  const totalExpenses = useMemo(() => {
-    return expenses.reduce(
-      (total, expense) =>
-        total + Number(expense.amount),
-      0
-    );
-  }, [expenses]);
-
-  const averageExpense = useMemo(() => {
-    if (expenses.length === 0) {
-      return 0;
-    }
-
-    return totalExpenses / expenses.length;
-  }, [totalExpenses, expenses.length]);
-
-  const highestExpense = useMemo(() => {
-    if (expenses.length === 0) {
-      return null;
-    }
-
-    return expenses.reduce((highest, expense) =>
-      Number(expense.amount) >
-        Number(highest.amount)
-        ? expense
-        : highest
-    );
-  }, [expenses]);
-
-  const topCategory = useMemo(() => {
-    if (expenses.length === 0) {
-      return null;
-    }
-
-    const categoryTotals = expenses.reduce(
-      (totals, expense) => {
-        const category =
-          expense.category || "OTHER";
-
-        totals[category] =
-          (totals[category] || 0) +
-          Number(expense.amount);
-
-        return totals;
-      },
-      {}
-    );
-
-    return Object.entries(categoryTotals).reduce(
-      (highest, current) =>
-        current[1] > highest[1]
-          ? current
-          : highest
-    );
-  }, [expenses]);
-
+  /*
+   * This must be declared before totalExpenses,
+   * averageExpense, highestExpense and topCategory
+   * because all of them depend on it.
+   */
   const filteredExpenses = useMemo(() => {
     const search = searchTerm
       .trim()
       .toLowerCase();
 
-    if (!search) {
-      return expenses;
-    }
-
     return expenses.filter((expense) => {
-      const item = expense.item
-        ?.toLowerCase() ?? "";
+      const item =
+        expense.item?.toLowerCase() ?? "";
 
       const category = formatCategory(
         expense.category || "OTHER"
@@ -136,14 +145,88 @@ function Dashboard() {
         expense.date ?? ""
       ).toLowerCase();
 
-      return (
+      const matchesSearch =
+        !search ||
         item.includes(search) ||
         category.includes(search) ||
         amount.includes(search) ||
-        date.includes(search)
-      );
+        date.includes(search);
+
+      const matchesCategory =
+        selectedCategory === "ALL" ||
+        expense.category === selectedCategory;
+
+      return matchesSearch && matchesCategory;
     });
-  }, [expenses, searchTerm]);
+  }, [
+    expenses,
+    searchTerm,
+    selectedCategory,
+  ]);
+
+  const totalExpenses = useMemo(() => {
+    return filteredExpenses.reduce(
+      (total, expense) =>
+        total + Number(expense.amount),
+      0
+    );
+  }, [filteredExpenses]);
+
+  const averageExpense = useMemo(() => {
+    if (filteredExpenses.length === 0) {
+      return 0;
+    }
+
+    return (
+      totalExpenses / filteredExpenses.length
+    );
+  }, [
+    totalExpenses,
+    filteredExpenses.length,
+  ]);
+
+  const highestExpense = useMemo(() => {
+    if (filteredExpenses.length === 0) {
+      return null;
+    }
+
+    return filteredExpenses.reduce(
+      (highest, expense) =>
+        Number(expense.amount) >
+        Number(highest.amount)
+          ? expense
+          : highest
+    );
+  }, [filteredExpenses]);
+
+  const topCategory = useMemo(() => {
+    if (filteredExpenses.length === 0) {
+      return null;
+    }
+
+    const categoryTotals =
+      filteredExpenses.reduce(
+        (totals, expense) => {
+          const category =
+            expense.category || "OTHER";
+
+          totals[category] =
+            (totals[category] || 0) +
+            Number(expense.amount);
+
+          return totals;
+        },
+        {}
+      );
+
+    return Object.entries(
+      categoryTotals
+    ).reduce((highest, current) =>
+      current[1] > highest[1]
+        ? current
+        : highest
+    );
+  }, [filteredExpenses]);
 
   function handleExpenseAdded(savedExpense) {
     setExpenses((currentExpenses) => [
@@ -152,11 +235,13 @@ function Dashboard() {
     ]);
   }
 
-  function handleExpenseUpdated(updatedExpense) {
+  function handleExpenseUpdated(
+    updatedExpense
+  ) {
     setExpenses((currentExpenses) =>
       currentExpenses.map((expense) =>
         Number(expense.id) ===
-          Number(updatedExpense.id)
+        Number(updatedExpense.id)
           ? updatedExpense
           : expense
       )
@@ -186,7 +271,9 @@ function Dashboard() {
       setDeleting(true);
       setError("");
 
-      await deleteExpense(expenseToDelete.id);
+      await deleteExpense(
+        expenseToDelete.id
+      );
 
       setExpenses((currentExpenses) =>
         currentExpenses.filter(
@@ -210,7 +297,9 @@ function Dashboard() {
       setExpenseToDelete(null);
     } catch (error) {
       console.error(error);
-      toast.error("Unable to delete expense");
+      toast.error(
+        "Unable to delete expense"
+      );
     } finally {
       setDeleting(false);
     }
@@ -232,64 +321,14 @@ function Dashboard() {
   function handleLogout() {
     localStorage.removeItem("token");
 
-    toast.success("Logged out successfully");
+    toast.success(
+      "Logged out successfully"
+    );
 
     navigate("/login", {
       replace: true,
     });
   }
-
-  function formatDate(dateValue) {
-    if (!dateValue) {
-      return "";
-    }
-
-    const [year, month, day] =
-      dateValue.split("-");
-
-    return new Date(
-      Number(year),
-      Number(month) - 1,
-      Number(day)
-    ).toLocaleDateString("en-IN", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
-  }
-
-  function formatCategory(category) {
-    return category
-      .toLowerCase()
-      .replace(/_/g, " ")
-      .replace(/\b\w/g, (letter) =>
-        letter.toUpperCase()
-      );
-  }
-
-  function formatCurrency(value) {
-    return `₹${Number(value).toLocaleString(
-      "en-IN",
-      {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 2,
-      }
-    )}`;
-  }
-
-  const insightCardClassName = `
-    rounded-xl
-    bg-gray-50
-    p-4
-    transition-all
-    duration-200
-    hover:-translate-y-1
-    hover:scale-[1.02]
-    hover:bg-gray-100
-    hover:shadow-lg
-    dark:bg-gray-800
-    dark:hover:bg-gray-700
-  `;
 
   if (loading) {
     return (
@@ -320,7 +359,8 @@ function Dashboard() {
               </h1>
 
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Track and understand your spending
+                Track and understand your
+                spending
               </p>
             </div>
           </div>
@@ -347,31 +387,39 @@ function Dashboard() {
           </h2>
 
           <p className="mt-1 text-gray-500 dark:text-gray-400">
-            Manage your expenses and monitor your
-            spending.
+            Manage your expenses and monitor
+            your spending.
           </p>
         </section>
 
         <section className="mb-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
             title="Total spent"
-            value={formatCurrency(totalExpenses)}
-            description="Across all saved expenses"
+            value={formatCurrency(
+              totalExpenses
+            )}
+            description="Across the filtered expenses"
             icon={<WalletCards size={22} />}
           />
 
           <StatCard
             title="Transactions"
-            value={expenses.length}
-            description={`${expenses.length
-              } saved expense${expenses.length === 1 ? "" : "s"
-              }`}
+            value={filteredExpenses.length}
+            description={`${
+              filteredExpenses.length
+            } matching expense${
+              filteredExpenses.length === 1
+                ? ""
+                : "s"
+            }`}
             icon={<ReceiptText size={22} />}
           />
 
           <StatCard
             title="Average expense"
-            value={formatCurrency(averageExpense)}
+            value={formatCurrency(
+              averageExpense
+            )}
             description="Average amount per transaction"
             icon={<TrendingUp size={22} />}
           />
@@ -392,13 +440,13 @@ function Dashboard() {
               </h3>
 
               <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                See which categories account for
-                most of your spending.
+                See which categories account
+                for most of your spending.
               </p>
             </div>
 
             <CategoryPieChart
-              expenses={expenses}
+              expenses={filteredExpenses}
             />
           </div>
 
@@ -408,11 +456,16 @@ function Dashboard() {
             </h3>
 
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              A snapshot of your expense activity.
+              A snapshot of your filtered
+              expense activity.
             </p>
 
             <div className="mt-6 space-y-4">
-              <div className={insightCardClassName}>
+              <div
+                className={
+                  insightCardClassName
+                }
+              >
                 <div className="flex items-start gap-3">
                   <div className="rounded-lg bg-yellow-100 p-2 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400">
                     <Trophy size={20} />
@@ -426,8 +479,8 @@ function Dashboard() {
                     <p className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
                       {topCategory
                         ? formatCategory(
-                          topCategory[0]
-                        )
+                            topCategory[0]
+                          )
                         : "No data"}
                     </p>
 
@@ -442,10 +495,16 @@ function Dashboard() {
                 </div>
               </div>
 
-              <div className={insightCardClassName}>
+              <div
+                className={
+                  insightCardClassName
+                }
+              >
                 <div className="flex items-start gap-3">
                   <div className="rounded-lg bg-green-100 p-2 text-green-600 dark:bg-green-900/30 dark:text-green-400">
-                    <IndianRupee size={20} />
+                    <IndianRupee
+                      size={20}
+                    />
                   </div>
 
                   <div>
@@ -470,7 +529,11 @@ function Dashboard() {
                 </div>
               </div>
 
-              <div className={insightCardClassName}>
+              <div
+                className={
+                  insightCardClassName
+                }
+              >
                 <div className="flex items-start gap-3">
                   <div className="rounded-lg bg-blue-100 p-2 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
                     <TrendingUp size={20} />
@@ -490,7 +553,11 @@ function Dashboard() {
                 </div>
               </div>
 
-              <div className={insightCardClassName}>
+              <div
+                className={
+                  insightCardClassName
+                }
+              >
                 <div className="flex items-start gap-3">
                   <div className="rounded-lg bg-purple-100 p-2 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400">
                     <ReceiptText size={20} />
@@ -502,7 +569,9 @@ function Dashboard() {
                     </p>
 
                     <p className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
-                      {expenses.length}
+                      {
+                        filteredExpenses.length
+                      }
                     </p>
                   </div>
                 </div>
@@ -510,6 +579,7 @@ function Dashboard() {
             </div>
           </div>
         </section>
+
         <section className="mb-8 rounded-2xl bg-white p-6 shadow-sm transition-colors dark:bg-gray-900 dark:shadow-black/20">
           <div className="mb-5">
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -517,11 +587,14 @@ function Dashboard() {
             </h3>
 
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Track how your expenses change month by month.
+              Track how your expenses change
+              month by month.
             </p>
           </div>
 
-          <MonthlyBarChart expenses={expenses} />
+          <MonthlyBarChart
+            expenses={filteredExpenses}
+          />
         </section>
 
         <section className="mb-8 rounded-2xl bg-white p-6 shadow-sm transition-colors dark:bg-gray-900 dark:shadow-black/20">
@@ -532,7 +605,9 @@ function Dashboard() {
           </h3>
 
           <AddExpenseForm
-            onExpenseAdded={handleExpenseAdded}
+            onExpenseAdded={
+              handleExpenseAdded
+            }
             onExpenseUpdated={
               handleExpenseUpdated
             }
@@ -554,33 +629,61 @@ function Dashboard() {
             </h3>
 
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              View and manage your saved expenses.
+              View and manage your saved
+              expenses.
             </p>
           </div>
 
-          <div className="px-6 py-5">
+          <div className="grid gap-4 px-6 py-5 md:grid-cols-[1fr_220px]">
             <input
               type="text"
-              placeholder="🔍 Search by item, category, amount, or date..."
+              placeholder="Search by item, category, amount, or date..."
               value={searchTerm}
               onChange={(event) =>
-                setSearchTerm(event.target.value)
+                setSearchTerm(
+                  event.target.value
+                )
               }
               className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-blue-400 dark:focus:ring-blue-900"
             />
+
+            <select
+              value={selectedCategory}
+              onChange={(event) =>
+                setSelectedCategory(
+                  event.target.value
+                )
+              }
+              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:focus:border-blue-400 dark:focus:ring-blue-900"
+            >
+              <option value="ALL">
+                All categories
+              </option>
+
+              {CATEGORIES.map((category) => (
+                <option
+                  key={category}
+                  value={category}
+                >
+                  {formatCategory(category)}
+                </option>
+              ))}
+            </select>
           </div>
 
           {expenses.length === 0 ? (
             <div className="px-6 py-16 text-center">
-              <div className="text-4xl">💰</div>
+              <div className="text-4xl">
+                💰
+              </div>
 
               <p className="mt-4 text-lg font-medium text-gray-700 dark:text-gray-200">
                 No expenses found
               </p>
 
               <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                Add your first expense using the
-                form above.
+                Add your first expense using
+                the form above.
               </p>
             </div>
           ) : (
@@ -611,7 +714,8 @@ function Dashboard() {
                 </thead>
 
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-                  {filteredExpenses.length > 0 ? (
+                  {filteredExpenses.length >
+                  0 ? (
                     filteredExpenses.map(
                       (expense) => (
                         <tr
@@ -626,7 +730,7 @@ function Dashboard() {
                             <span className="inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
                               {formatCategory(
                                 expense.category ||
-                                "OTHER"
+                                  "OTHER"
                               )}
                             </span>
                           </td>
@@ -696,8 +800,8 @@ function Dashboard() {
                         </p>
 
                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                          Try changing or clearing
-                          your search.
+                          Try changing or
+                          clearing your filters.
                         </p>
                       </td>
                     </tr>
@@ -710,7 +814,9 @@ function Dashboard() {
       </div>
 
       <DeleteConfirmationModal
-        isOpen={Boolean(expenseToDelete)}
+        isOpen={Boolean(
+          expenseToDelete
+        )}
         expense={expenseToDelete}
         onConfirm={handleDeleteConfirm}
         onCancel={handleDeleteCancel}

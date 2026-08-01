@@ -15,8 +15,8 @@ import toast from "react-hot-toast";
 
 import AddExpenseForm from "../components/AddExpenseForm";
 import CategoryPieChart from "../components/charts/CategoryPieChart";
-import MonthlyBarChart from "../components/charts/MonthlyBarChart";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
+import MonthlyBarChart from "../components/charts/MonthlyBarChart";
 import StatCard from "../components/StatCard";
 import ThemeToggle from "../components/ThemeToggle";
 
@@ -78,13 +78,102 @@ function formatCategory(category) {
 }
 
 function formatCurrency(value) {
-  return `₹${Number(value).toLocaleString(
-    "en-IN",
-    {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 2,
+  return `₹${Number(value).toLocaleString("en-IN", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  })}`;
+}
+
+function parseExpenseDate(dateValue) {
+  if (!dateValue) {
+    return null;
+  }
+
+  const date = new Date(`${dateValue}T00:00:00`);
+
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return date;
+}
+
+function matchesDateRange(
+  dateValue,
+  selectedDateRange
+) {
+  if (selectedDateRange === "ALL") {
+    return true;
+  }
+
+  const expenseDate = parseExpenseDate(dateValue);
+
+  if (!expenseDate) {
+    return false;
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  switch (selectedDateRange) {
+    case "TODAY":
+      return (
+        expenseDate.getTime() === today.getTime()
+      );
+
+    case "LAST_7_DAYS": {
+      const startDate = new Date(today);
+
+      startDate.setDate(today.getDate() - 6);
+
+      return (
+        expenseDate >= startDate &&
+        expenseDate <= today
+      );
     }
-  )}`;
+
+    case "LAST_30_DAYS": {
+      const startDate = new Date(today);
+
+      startDate.setDate(today.getDate() - 29);
+
+      return (
+        expenseDate >= startDate &&
+        expenseDate <= today
+      );
+    }
+
+    case "THIS_MONTH":
+      return (
+        expenseDate.getFullYear() ===
+          today.getFullYear() &&
+        expenseDate.getMonth() === today.getMonth()
+      );
+
+    case "LAST_MONTH": {
+      const lastMonth = new Date(
+        today.getFullYear(),
+        today.getMonth() - 1,
+        1
+      );
+
+      return (
+        expenseDate.getFullYear() ===
+          lastMonth.getFullYear() &&
+        expenseDate.getMonth() ===
+          lastMonth.getMonth()
+      );
+    }
+
+    case "THIS_YEAR":
+      return (
+        expenseDate.getFullYear() ===
+        today.getFullYear()
+      );
+
+    default:
+      return true;
+  }
 }
 
 function Dashboard() {
@@ -95,20 +184,27 @@ function Dashboard() {
   const [error, setError] = useState("");
   const [editingExpense, setEditingExpense] =
     useState(null);
+
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] =
+    useState("ALL");
+  const [selectedDateRange, setSelectedDateRange] =
+    useState("ALL");
+  const [sortBy, setSortBy] = useState("NEWEST");
+
   const [expenseToDelete, setExpenseToDelete] =
     useState(null);
   const [deleting, setDeleting] = useState(false);
-  const [selectedCategory, setSelectedCategory] =
-    useState("ALL");
 
   useEffect(() => {
     async function loadExpenses() {
       try {
         const expenseData = await getExpenses();
+
         setExpenses(expenseData);
       } catch (error) {
         console.error(error);
+
         setError("Unable to load expenses");
         toast.error("Unable to load expenses");
       } finally {
@@ -119,31 +215,21 @@ function Dashboard() {
     loadExpenses();
   }, []);
 
-  /*
-   * This must be declared before totalExpenses,
-   * averageExpense, highestExpense and topCategory
-   * because all of them depend on it.
-   */
   const filteredExpenses = useMemo(() => {
-    const search = searchTerm
-      .trim()
-      .toLowerCase();
+    const search = searchTerm.trim().toLowerCase();
 
     return expenses.filter((expense) => {
       const item =
         expense.item?.toLowerCase() ?? "";
 
-      const category = formatCategory(
-        expense.category || "OTHER"
-      ).toLowerCase();
+      const rawCategory =
+        expense.category || "OTHER";
 
-      const amount = String(
-        expense.amount ?? ""
-      ).toLowerCase();
+      const category =
+        formatCategory(rawCategory).toLowerCase();
 
-      const date = String(
-        expense.date ?? ""
-      ).toLowerCase();
+      const amount = String(expense.amount ?? "");
+      const date = String(expense.date ?? "");
 
       const matchesSearch =
         !search ||
@@ -154,15 +240,92 @@ function Dashboard() {
 
       const matchesCategory =
         selectedCategory === "ALL" ||
-        expense.category === selectedCategory;
+        rawCategory === selectedCategory;
 
-      return matchesSearch && matchesCategory;
+      const matchesDate = matchesDateRange(
+        expense.date,
+        selectedDateRange
+      );
+
+      return (
+        matchesSearch &&
+        matchesCategory &&
+        matchesDate
+      );
     });
   }, [
     expenses,
     searchTerm,
     selectedCategory,
+    selectedDateRange,
   ]);
+
+  const sortedExpenses = useMemo(() => {
+    const sorted = [...filteredExpenses];
+
+    switch (sortBy) {
+      case "NEWEST":
+        return sorted.sort((first, second) => {
+          const firstDate =
+            parseExpenseDate(first.date)?.getTime() ?? 0;
+
+          const secondDate =
+            parseExpenseDate(second.date)?.getTime() ?? 0;
+
+          return secondDate - firstDate;
+        });
+
+      case "OLDEST":
+        return sorted.sort((first, second) => {
+          const firstDate =
+            parseExpenseDate(first.date)?.getTime() ?? 0;
+
+          const secondDate =
+            parseExpenseDate(second.date)?.getTime() ?? 0;
+
+          return firstDate - secondDate;
+        });
+
+      case "HIGHEST":
+        return sorted.sort(
+          (first, second) =>
+            Number(second.amount) -
+            Number(first.amount)
+        );
+
+      case "LOWEST":
+        return sorted.sort(
+          (first, second) =>
+            Number(first.amount) -
+            Number(second.amount)
+        );
+
+      case "AZ":
+        return sorted.sort((first, second) =>
+          String(first.item ?? "").localeCompare(
+            String(second.item ?? ""),
+            "en",
+            {
+              sensitivity: "base",
+            }
+          )
+        );
+
+      case "ZA":
+        return sorted.sort((first, second) =>
+          String(second.item ?? "").localeCompare(
+            String(first.item ?? ""),
+            "en",
+            {
+              sensitivity: "base",
+            }
+          )
+        );
+
+      default:
+        return sorted;
+    }
+  }, [filteredExpenses, sortBy]);
 
   const totalExpenses = useMemo(() => {
     return filteredExpenses.reduce(
@@ -180,10 +343,7 @@ function Dashboard() {
     return (
       totalExpenses / filteredExpenses.length
     );
-  }, [
-    totalExpenses,
-    filteredExpenses.length,
-  ]);
+  }, [totalExpenses, filteredExpenses.length]);
 
   const highestExpense = useMemo(() => {
     if (filteredExpenses.length === 0) {
@@ -219,12 +379,11 @@ function Dashboard() {
         {}
       );
 
-    return Object.entries(
-      categoryTotals
-    ).reduce((highest, current) =>
-      current[1] > highest[1]
-        ? current
-        : highest
+    return Object.entries(categoryTotals).reduce(
+      (highest, current) =>
+        current[1] > highest[1]
+          ? current
+          : highest
     );
   }, [filteredExpenses]);
 
@@ -235,9 +394,7 @@ function Dashboard() {
     ]);
   }
 
-  function handleExpenseUpdated(
-    updatedExpense
-  ) {
+  function handleExpenseUpdated(updatedExpense) {
     setExpenses((currentExpenses) =>
       currentExpenses.map((expense) =>
         Number(expense.id) ===
@@ -247,6 +404,19 @@ function Dashboard() {
       )
     );
 
+    setEditingExpense(null);
+  }
+
+  function handleEdit(expense) {
+    setEditingExpense(expense);
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }
+
+  function handleCancelEdit() {
     setEditingExpense(null);
   }
 
@@ -271,9 +441,7 @@ function Dashboard() {
       setDeleting(true);
       setError("");
 
-      await deleteExpense(
-        expenseToDelete.id
-      );
+      await deleteExpense(expenseToDelete.id);
 
       setExpenses((currentExpenses) =>
         currentExpenses.filter(
@@ -297,33 +465,16 @@ function Dashboard() {
       setExpenseToDelete(null);
     } catch (error) {
       console.error(error);
-      toast.error(
-        "Unable to delete expense"
-      );
+      toast.error("Unable to delete expense");
     } finally {
       setDeleting(false);
     }
   }
 
-  function handleEdit(expense) {
-    setEditingExpense(expense);
-
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  }
-
-  function handleCancelEdit() {
-    setEditingExpense(null);
-  }
-
   function handleLogout() {
     localStorage.removeItem("token");
 
-    toast.success(
-      "Logged out successfully"
-    );
+    toast.success("Logged out successfully");
 
     navigate("/login", {
       replace: true,
@@ -359,8 +510,7 @@ function Dashboard() {
               </h1>
 
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Track and understand your
-                spending
+                Track and understand your spending
               </p>
             </div>
           </div>
@@ -387,18 +537,16 @@ function Dashboard() {
           </h2>
 
           <p className="mt-1 text-gray-500 dark:text-gray-400">
-            Manage your expenses and monitor
-            your spending.
+            Manage your expenses and monitor your
+            spending.
           </p>
         </section>
 
         <section className="mb-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
             title="Total spent"
-            value={formatCurrency(
-              totalExpenses
-            )}
-            description="Across the filtered expenses"
+            value={formatCurrency(totalExpenses)}
+            description="Based on active filters"
             icon={<WalletCards size={22} />}
           />
 
@@ -417,10 +565,8 @@ function Dashboard() {
 
           <StatCard
             title="Average expense"
-            value={formatCurrency(
-              averageExpense
-            )}
-            description="Average amount per transaction"
+            value={formatCurrency(averageExpense)}
+            description="Average matching transaction"
             icon={<TrendingUp size={22} />}
           />
 
@@ -440,8 +586,8 @@ function Dashboard() {
               </h3>
 
               <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                See which categories account
-                for most of your spending.
+                See which categories account for most
+                of your spending.
               </p>
             </div>
 
@@ -456,16 +602,11 @@ function Dashboard() {
             </h3>
 
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              A snapshot of your filtered
-              expense activity.
+              A snapshot of your filtered expenses.
             </p>
 
             <div className="mt-6 space-y-4">
-              <div
-                className={
-                  insightCardClassName
-                }
-              >
+              <div className={insightCardClassName}>
                 <div className="flex items-start gap-3">
                   <div className="rounded-lg bg-yellow-100 p-2 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400">
                     <Trophy size={20} />
@@ -495,16 +636,10 @@ function Dashboard() {
                 </div>
               </div>
 
-              <div
-                className={
-                  insightCardClassName
-                }
-              >
+              <div className={insightCardClassName}>
                 <div className="flex items-start gap-3">
                   <div className="rounded-lg bg-green-100 p-2 text-green-600 dark:bg-green-900/30 dark:text-green-400">
-                    <IndianRupee
-                      size={20}
-                    />
+                    <IndianRupee size={20} />
                   </div>
 
                   <div>
@@ -529,11 +664,7 @@ function Dashboard() {
                 </div>
               </div>
 
-              <div
-                className={
-                  insightCardClassName
-                }
-              >
+              <div className={insightCardClassName}>
                 <div className="flex items-start gap-3">
                   <div className="rounded-lg bg-blue-100 p-2 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
                     <TrendingUp size={20} />
@@ -553,11 +684,7 @@ function Dashboard() {
                 </div>
               </div>
 
-              <div
-                className={
-                  insightCardClassName
-                }
-              >
+              <div className={insightCardClassName}>
                 <div className="flex items-start gap-3">
                   <div className="rounded-lg bg-purple-100 p-2 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400">
                     <ReceiptText size={20} />
@@ -569,9 +696,7 @@ function Dashboard() {
                     </p>
 
                     <p className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
-                      {
-                        filteredExpenses.length
-                      }
+                      {filteredExpenses.length}
                     </p>
                   </div>
                 </div>
@@ -587,7 +712,7 @@ function Dashboard() {
             </h3>
 
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Track how your expenses change
+              Track how your filtered expenses change
               month by month.
             </p>
           </div>
@@ -605,9 +730,7 @@ function Dashboard() {
           </h3>
 
           <AddExpenseForm
-            onExpenseAdded={
-              handleExpenseAdded
-            }
+            onExpenseAdded={handleExpenseAdded}
             onExpenseUpdated={
               handleExpenseUpdated
             }
@@ -629,20 +752,18 @@ function Dashboard() {
             </h3>
 
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              View and manage your saved
-              expenses.
+              Search, filter, sort, and manage your
+              saved expenses.
             </p>
           </div>
 
-          <div className="grid gap-4 px-6 py-5 md:grid-cols-[1fr_220px]">
+          <div className="grid gap-4 px-6 py-5 md:grid-cols-2 xl:grid-cols-[1fr_190px_190px_190px]">
             <input
               type="text"
               placeholder="Search by item, category, amount, or date..."
               value={searchTerm}
               onChange={(event) =>
-                setSearchTerm(
-                  event.target.value
-                )
+                setSearchTerm(event.target.value)
               }
               className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-blue-400 dark:focus:ring-blue-900"
             />
@@ -669,21 +790,70 @@ function Dashboard() {
                 </option>
               ))}
             </select>
+
+            <select
+              value={selectedDateRange}
+              onChange={(event) =>
+                setSelectedDateRange(
+                  event.target.value
+                )
+              }
+              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:focus:border-blue-400 dark:focus:ring-blue-900"
+            >
+              <option value="ALL">All time</option>
+              <option value="TODAY">Today</option>
+              <option value="LAST_7_DAYS">
+                Last 7 days
+              </option>
+              <option value="LAST_30_DAYS">
+                Last 30 days
+              </option>
+              <option value="THIS_MONTH">
+                This month
+              </option>
+              <option value="LAST_MONTH">
+                Last month
+              </option>
+              <option value="THIS_YEAR">
+                This year
+              </option>
+            </select>
+
+            <select
+              value={sortBy}
+              onChange={(event) =>
+                setSortBy(event.target.value)
+              }
+              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:focus:border-blue-400 dark:focus:ring-blue-900"
+            >
+              <option value="NEWEST">
+                Newest first
+              </option>
+              <option value="OLDEST">
+                Oldest first
+              </option>
+              <option value="HIGHEST">
+                Highest amount
+              </option>
+              <option value="LOWEST">
+                Lowest amount
+              </option>
+              <option value="AZ">Item A–Z</option>
+              <option value="ZA">Item Z–A</option>
+            </select>
           </div>
 
           {expenses.length === 0 ? (
             <div className="px-6 py-16 text-center">
-              <div className="text-4xl">
-                💰
-              </div>
+              <div className="text-4xl">💰</div>
 
               <p className="mt-4 text-lg font-medium text-gray-700 dark:text-gray-200">
                 No expenses found
               </p>
 
               <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                Add your first expense using
-                the form above.
+                Add your first expense using the form
+                above.
               </p>
             </div>
           ) : (
@@ -714,77 +884,66 @@ function Dashboard() {
                 </thead>
 
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-                  {filteredExpenses.length >
-                  0 ? (
-                    filteredExpenses.map(
-                      (expense) => (
-                        <tr
-                          key={expense.id}
-                          className="transition hover:bg-gray-50 dark:hover:bg-gray-800/70"
-                        >
-                          <td className="px-6 py-4 font-medium text-gray-900 dark:text-gray-100">
-                            {expense.item}
-                          </td>
+                  {sortedExpenses.length > 0 ? (
+                    sortedExpenses.map((expense) => (
+                      <tr
+                        key={expense.id}
+                        className="transition hover:bg-gray-50 dark:hover:bg-gray-800/70"
+                      >
+                        <td className="px-6 py-4 font-medium text-gray-900 dark:text-gray-100">
+                          {expense.item}
+                        </td>
 
-                          <td className="px-6 py-4">
-                            <span className="inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
-                              {formatCategory(
-                                expense.category ||
-                                  "OTHER"
-                              )}
-                            </span>
-                          </td>
-
-                          <td className="px-6 py-4 text-gray-700 dark:text-gray-300">
-                            {formatCurrency(
-                              expense.amount
+                        <td className="px-6 py-4">
+                          <span className="inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
+                            {formatCategory(
+                              expense.category ||
+                                "OTHER"
                             )}
-                          </td>
+                          </span>
+                        </td>
 
-                          <td className="px-6 py-4 text-gray-500 dark:text-gray-400">
-                            {formatDate(
-                              expense.date
-                            )}
-                          </td>
+                        <td className="px-6 py-4 text-gray-700 dark:text-gray-300">
+                          {formatCurrency(
+                            expense.amount
+                          )}
+                        </td>
 
-                          <td className="px-6 py-4">
-                            <div className="flex justify-end gap-3">
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  handleEdit(
-                                    expense
-                                  )
-                                }
-                                className="flex items-center gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-700 transition hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-950/70"
-                              >
-                                <Pencil
-                                  size={16}
-                                />
-                                <span>Edit</span>
-                              </button>
+                        <td className="px-6 py-4 text-gray-500 dark:text-gray-400">
+                          {formatDate(
+                            expense.date
+                          )}
+                        </td>
 
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  handleDeleteRequest(
-                                    expense
-                                  )
-                                }
-                                className="flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100 dark:bg-red-950/40 dark:text-red-300 dark:hover:bg-red-950/70"
-                              >
-                                <Trash2
-                                  size={16}
-                                />
-                                <span>
-                                  Delete
-                                </span>
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      )
-                    )
+                        <td className="px-6 py-4">
+                          <div className="flex justify-end gap-3">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleEdit(expense)
+                              }
+                              className="flex items-center gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-700 transition hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-950/70"
+                            >
+                              <Pencil size={16} />
+                              <span>Edit</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleDeleteRequest(
+                                  expense
+                                )
+                              }
+                              className="flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100 dark:bg-red-950/40 dark:text-red-300 dark:hover:bg-red-950/70"
+                            >
+                              <Trash2 size={16} />
+                              <span>Delete</span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
                   ) : (
                     <tr>
                       <td
@@ -800,8 +959,8 @@ function Dashboard() {
                         </p>
 
                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                          Try changing or
-                          clearing your filters.
+                          Try changing or clearing
+                          your filters.
                         </p>
                       </td>
                     </tr>
@@ -814,9 +973,7 @@ function Dashboard() {
       </div>
 
       <DeleteConfirmationModal
-        isOpen={Boolean(
-          expenseToDelete
-        )}
+        isOpen={Boolean(expenseToDelete)}
         expense={expenseToDelete}
         onConfirm={handleDeleteConfirm}
         onCancel={handleDeleteCancel}

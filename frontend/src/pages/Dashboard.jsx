@@ -5,7 +5,6 @@ import {
   LogOut,
   Pencil,
   ReceiptText,
-  Sparkles,
   Trash2,
   TrendingUp,
   Trophy,
@@ -19,6 +18,8 @@ import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 import MonthlyBarChart from "../components/charts/MonthlyBarChart";
 import StatCard from "../components/StatCard";
 import ThemeToggle from "../components/ThemeToggle";
+import AIInsights from "../components/AIInsights";
+import AIScoreCard from "../components/AIScoreCard";
 
 import {
   deleteExpense,
@@ -146,7 +147,7 @@ function matchesDateRange(
     case "THIS_MONTH":
       return (
         expenseDate.getFullYear() ===
-          today.getFullYear() &&
+        today.getFullYear() &&
         expenseDate.getMonth() === today.getMonth()
       );
 
@@ -159,9 +160,9 @@ function matchesDateRange(
 
       return (
         expenseDate.getFullYear() ===
-          lastMonth.getFullYear() &&
+        lastMonth.getFullYear() &&
         expenseDate.getMonth() ===
-          lastMonth.getMonth()
+        lastMonth.getMonth()
       );
     }
 
@@ -353,7 +354,7 @@ function Dashboard() {
     return filteredExpenses.reduce(
       (highest, expense) =>
         Number(expense.amount) >
-        Number(highest.amount)
+          Number(highest.amount)
           ? expense
           : highest
     );
@@ -398,7 +399,7 @@ function Dashboard() {
     setExpenses((currentExpenses) =>
       currentExpenses.map((expense) =>
         Number(expense.id) ===
-        Number(updatedExpense.id)
+          Number(updatedExpense.id)
           ? updatedExpense
           : expense
       )
@@ -545,37 +546,29 @@ function Dashboard() {
         <section className="mb-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
             title="Total spent"
-            value={formatCurrency(totalExpenses)}
+            numericValue={totalExpenses}
+            prefix="₹"
             description="Based on active filters"
             icon={<WalletCards size={22} />}
           />
 
           <StatCard
             title="Transactions"
-            value={filteredExpenses.length}
-            description={`${
-              filteredExpenses.length
-            } matching expense${
-              filteredExpenses.length === 1
-                ? ""
-                : "s"
-            }`}
+            numericValue={filteredExpenses.length}
+            description={`${filteredExpenses.length} matching expense${filteredExpenses.length === 1 ? "" : "s"
+              }`}
             icon={<ReceiptText size={22} />}
           />
 
           <StatCard
             title="Average expense"
-            value={formatCurrency(averageExpense)}
+            numericValue={averageExpense}
+            prefix="₹"
             description="Average matching transaction"
             icon={<TrendingUp size={22} />}
           />
 
-          <StatCard
-            title="AI status"
-            value="Coming soon"
-            description="Smart analysis is the next phase"
-            icon={<Sparkles size={22} />}
-          />
+          <AIScoreCard expenses={filteredExpenses} />
         </section>
 
         <section className="mb-8 grid gap-6 lg:grid-cols-3">
@@ -620,8 +613,8 @@ function Dashboard() {
                     <p className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
                       {topCategory
                         ? formatCategory(
-                            topCategory[0]
-                          )
+                          topCategory[0]
+                        )
                         : "No data"}
                     </p>
 
@@ -721,6 +714,10 @@ function Dashboard() {
             expenses={filteredExpenses}
           />
         </section>
+
+        <div className="mb-8">
+          <AIInsights expenses={filteredExpenses} />
+        </div>
 
         <section className="mb-8 rounded-2xl bg-white p-6 shadow-sm transition-colors dark:bg-gray-900 dark:shadow-black/20">
           <h3 className="mb-5 text-xl font-semibold text-gray-900 dark:text-white">
@@ -898,7 +895,7 @@ function Dashboard() {
                           <span className="inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
                             {formatCategory(
                               expense.category ||
-                                "OTHER"
+                              "OTHER"
                             )}
                           </span>
                         </td>

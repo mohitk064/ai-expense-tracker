@@ -1,11 +1,80 @@
-function StatCard({ title, value, description, icon }) {
+import { useEffect, useState } from "react";
+
+function StatCard({
+  title,
+  value,
+  numericValue,
+  prefix = "",
+  suffix = "",
+  description,
+  icon,
+}) {
+  const [displayValue, setDisplayValue] = useState(
+    numericValue ?? value
+  );
+
+  useEffect(() => {
+    if (numericValue === undefined) {
+      setDisplayValue(value);
+      return;
+    }
+
+    const duration = 900;
+    const startTime = performance.now();
+
+    function animate(currentTime) {
+      const elapsedTime = currentTime - startTime;
+      const progress = Math.min(
+        elapsedTime / duration,
+        1
+      );
+
+      const easedProgress =
+        1 - Math.pow(1 - progress, 3);
+
+      const currentValue =
+        numericValue * easedProgress;
+
+      setDisplayValue(currentValue);
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    }
+
+    const animationFrame =
+      requestAnimationFrame(animate);
+
+    return () =>
+      cancelAnimationFrame(animationFrame);
+  }, [numericValue, value]);
+
+  function formatDisplayedValue() {
+    if (numericValue === undefined) {
+      return value;
+    }
+
+    const formattedNumber =
+      Number(displayValue).toLocaleString("en-IN", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+      });
+
+    return `${prefix}${formattedNumber}${suffix}`;
+  }
+
   return (
     <div
       className="
-        rounded-2xl border border-gray-200
-        bg-white p-6 shadow-sm
-        transition-all duration-200
-        hover:-translate-y-1 hover:shadow-md
+        rounded-2xl
+        border border-gray-200
+        bg-white
+        p-6
+        shadow-sm
+        transition-all
+        duration-200
+        hover:-translate-y-1
+        hover:shadow-md
         dark:border-gray-800
         dark:bg-gray-900
         dark:shadow-black/20
@@ -18,7 +87,7 @@ function StatCard({ title, value, description, icon }) {
           </p>
 
           <p className="mt-2 text-3xl font-bold text-gray-900 dark:text-white">
-            {value}
+            {formatDisplayedValue()}
           </p>
 
           {description && (

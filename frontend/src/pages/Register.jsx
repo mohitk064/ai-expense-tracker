@@ -83,11 +83,11 @@ function Register() {
 
   return (
     <main className="relative flex min-h-screen items-center justify-center bg-gray-100 px-4 py-10 transition-colors dark:bg-gray-950">
-      <div className="absolute right-4 top-4">
-        <ThemeToggle />
-      </div>
 
-      <section className="w-full max-w-lg rounded-2xl bg-white p-8 shadow-lg transition-colors dark:bg-gray-900 dark:shadow-black/30">
+      <section className="relative w-full max-w-lg rounded-2xl bg-white p-8 shadow-lg transition-colors dark:bg-gray-900 dark:shadow-black/30">
+        <div className="absolute right-4 top-4">
+          <ThemeToggle />
+        </div>
         <div className="mb-8 text-center">
           <div className="flex items-center justify-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 text-white shadow-lg shadow-blue-600/20">

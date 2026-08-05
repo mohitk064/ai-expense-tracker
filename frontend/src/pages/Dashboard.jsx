@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+  Download,
+  FileSpreadsheet,
   IndianRupee,
   LogOut,
   Pencil,
@@ -20,6 +22,9 @@ import StatCard from "../components/StatCard";
 import ThemeToggle from "../components/ThemeToggle";
 import AIInsights from "../components/AIInsights";
 import AIScoreCard from "../components/AIScoreCard";
+import { exportExpensesToPdf } from "../utils/exportPdf";
+import { exportExpensesToExcel } from "../utils/exportExcel";
+import { getExpenseAnalytics } from "../utils/expenseAnalytics";
 
 import {
   deleteExpense,
@@ -79,7 +84,7 @@ function formatCategory(category) {
 }
 
 function formatCurrency(value) {
-  return `₹${Number(value).toLocaleString("en-IN", {
+  return `Rs. ${Number(value).toLocaleString("en-IN", {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   })}`;
@@ -261,6 +266,79 @@ function Dashboard() {
     selectedDateRange,
   ]);
 
+  async function handleExportPdf() {
+    if (filteredExpenses.length === 0) {
+      toast.error(
+        "No expenses available to export"
+      );
+      return;
+    }
+
+    const toastId = toast.loading(
+      "Generating PDF report..."
+    );
+
+    try {
+      await exportExpensesToPdf(
+        filteredExpenses,
+        exportAnalytics
+      );
+
+      toast.success(
+        "PDF report generated successfully",
+        {
+          id: toastId,
+        }
+      );
+    } catch (error) {
+      console.error(
+        "PDF generation failed:",
+        error
+      );
+
+      toast.error(
+        "Unable to generate PDF report",
+        {
+          id: toastId,
+        }
+      );
+    }
+  }
+
+  function handleExportExcel() {
+    if (filteredExpenses.length === 0) {
+      toast.error("No expenses available to export");
+      return;
+    }
+
+    toast.loading("Generating Excel report...", {
+      id: "excel-export",
+    });
+
+    try {
+      exportExpensesToExcel(
+        filteredExpenses,
+        exportAnalytics
+      );
+
+      toast.success(
+        "Excel report generated successfully",
+        {
+          id: "excel-export",
+        }
+      );
+    } catch (error) {
+      console.error(error);
+
+      toast.error(
+        "Unable to generate Excel report",
+        {
+          id: "excel-export",
+        }
+      );
+    }
+  }
+
   const sortedExpenses = useMemo(() => {
     const sorted = [...filteredExpenses];
 
@@ -387,6 +465,15 @@ function Dashboard() {
           : highest
     );
   }, [filteredExpenses]);
+  const analytics = getExpenseAnalytics(filteredExpenses);
+
+  const exportAnalytics = {
+    totalSpent: analytics.totalSpent,
+    averageExpense: analytics.averageExpense,
+    transactionCount: analytics.transactionCount,
+    topCategory: analytics.topCategory,
+    topCategoryAmount: analytics.topCategoryAmount,
+  };
 
   function handleExpenseAdded(savedExpense) {
     setExpenses((currentExpenses) => [
@@ -742,16 +829,81 @@ function Dashboard() {
           </div>
         )}
 
-        <section className="overflow-hidden rounded-2xl bg-white shadow-sm transition-colors dark:bg-gray-900 dark:shadow-black/20">
-          <div className="border-b border-gray-200 px-6 py-5 dark:border-gray-800">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-              Recent expenses
-            </h3>
 
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Search, filter, sort, and manage your
-              saved expenses.
-            </p>
+        <section className="overflow-hidden rounded-2xl bg-white shadow-sm transition-colors dark:bg-gray-900 dark:shadow-black/20">
+          <div className="flex flex-col gap-4 border-b border-gray-200 px-6 py-5 dark:border-gray-800 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                Recent expenses
+              </h3>
+
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                Search, filter, sort, and manage your saved expenses.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-3 xs:flex-row sm:flex-row">
+              <button
+                type="button"
+                onClick={handleExportPdf}
+                disabled={filteredExpenses.length === 0}
+                className="
+        inline-flex
+        items-center
+        justify-center
+        gap-2
+        rounded-lg
+        bg-red-600
+        px-4
+        py-2.5
+        text-sm
+        font-semibold
+        text-white
+        shadow-sm
+        transition-all
+        duration-200
+        hover:-translate-y-0.5
+        hover:bg-red-700
+        hover:shadow-md
+        focus:outline-none
+        focus:ring-2
+        focus:ring-red-300
+        disabled:cursor-not-allowed
+        disabled:opacity-50
+        disabled:hover:translate-y-0
+      "
+              >
+                <Download size={17} />
+                Export PDF
+              </button>
+
+              <button
+                type="button"
+                onClick={handleExportExcel}
+                className="
+                  inline-flex
+                  items-center
+                  justify-center
+                  gap-2
+                  rounded-lg
+                  border
+                border-green-200
+                bg-green-50
+                  px-4
+                  py-2.5
+                  text-sm
+                  font-semibold
+                text-green-700
+                  opacity-60
+                dark:border-green-900
+                dark:bg-green-950/30
+                dark:text-green-400
+                "
+              >
+                <FileSpreadsheet size={17} />
+                Export Excel
+              </button>
+            </div>
           </div>
 
           <div className="grid gap-4 px-6 py-5 md:grid-cols-2 xl:grid-cols-[1fr_190px_190px_190px]">

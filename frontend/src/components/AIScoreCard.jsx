@@ -34,6 +34,16 @@ function AIScoreCard({ expenses = [] }) {
   let label = "Needs more data";
   let description =
     "Add at least three expenses to receive a more meaningful financial score.";
+  let scoreColor = "stroke-red-500";
+  let scoreTextColor = "text-red-500";
+
+  if (score >= 80) {
+    scoreColor = "stroke-green-500";
+    scoreTextColor = "text-green-500";
+  } else if (score >= 60) {
+    scoreColor = "stroke-amber-500";
+    scoreTextColor = "text-amber-500";
+  }
 
   if (transactionCount >= 3) {
     const formattedTopCategory = formatCategory(
@@ -111,7 +121,7 @@ function AIScoreCard({ expenses = [] }) {
               strokeLinecap="round"
               strokeDasharray={circumference}
               strokeDashoffset={progressOffset}
-              className="stroke-blue-600 transition-all duration-1000 ease-out"
+              className={`${scoreColor} transition-all duration-1000 ease-out`}
             />
           </svg>
 
@@ -121,7 +131,9 @@ function AIScoreCard({ expenses = [] }) {
               className="mb-1 text-blue-600 dark:text-blue-400"
             />
 
-            <span className="text-2xl font-bold text-gray-900 dark:text-white">
+            <span
+              className={`text-2xl font-bold ${scoreTextColor}`}
+            >
               {score}
             </span>
 

@@ -11,6 +11,7 @@ import {
   TrendingUp,
   Trophy,
   WalletCards,
+  Search,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -618,7 +619,7 @@ function Dashboard() {
         </div>
       </header>
 
-      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
         <section className="mb-8">
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
             Expense Dashboard
@@ -630,7 +631,7 @@ function Dashboard() {
           </p>
         </section>
 
-        <section className="mb-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <section className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
           <StatCard
             title="Total spent"
             numericValue={totalExpenses}
@@ -659,7 +660,7 @@ function Dashboard() {
         </section>
 
         <section className="mb-8 grid gap-6 lg:grid-cols-3">
-          <div className="rounded-2xl bg-white p-6 shadow-sm transition-colors dark:bg-gray-900 dark:shadow-black/20 lg:col-span-2">
+          <div className="rounded-2xl bg-white p-4 shadow-sm transition-colors sm:p-6 dark:bg-gray-900 dark:shadow-black/20 lg:col-span-2">
             <div className="mb-2">
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
                 Spending by category
@@ -676,7 +677,7 @@ function Dashboard() {
             />
           </div>
 
-          <div className="rounded-2xl bg-white p-6 shadow-sm transition-colors dark:bg-gray-900 dark:shadow-black/20">
+          <div className="rounded-2xl bg-white p-4 shadow-sm transition-colors sm:p-6 dark:bg-gray-900 dark:shadow-black/20">
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
               Quick insights
             </h3>
@@ -785,7 +786,7 @@ function Dashboard() {
           </div>
         </section>
 
-        <section className="mb-8 rounded-2xl bg-white p-6 shadow-sm transition-colors dark:bg-gray-900 dark:shadow-black/20">
+        <section className="mb-8 rounded-2xl bg-white p-4 shadow-sm transition-colors sm:p-6 dark:bg-gray-900 dark:shadow-black/20">
           <div className="mb-5">
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
               Monthly Spending Trend
@@ -806,7 +807,7 @@ function Dashboard() {
           <AIInsights expenses={filteredExpenses} />
         </div>
 
-        <section className="mb-8 rounded-2xl bg-white p-6 shadow-sm transition-colors dark:bg-gray-900 dark:shadow-black/20">
+        <section className="mb-8 rounded-2xl bg-white p-4 shadow-sm transition-colors sm:p-6 dark:bg-gray-900 dark:shadow-black/20">
           <h3 className="mb-5 text-xl font-semibold text-gray-900 dark:text-white">
             {editingExpense
               ? "Update expense"
@@ -831,7 +832,7 @@ function Dashboard() {
 
 
         <section className="overflow-hidden rounded-2xl bg-white shadow-sm transition-colors dark:bg-gray-900 dark:shadow-black/20">
-          <div className="flex flex-col gap-4 border-b border-gray-200 px-6 py-5 dark:border-gray-800 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-4 border-b border-gray-200 px-4 py-4 dark:border-gray-800 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-5">
             <div>
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
                 Recent expenses
@@ -842,7 +843,7 @@ function Dashboard() {
               </p>
             </div>
 
-            <div className="flex flex-col gap-3 xs:flex-row sm:flex-row">
+            <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
               <button
                 type="button"
                 onClick={handleExportPdf}
@@ -894,8 +895,7 @@ function Dashboard() {
                   text-sm
                   font-semibold
                 text-green-700
-                  opacity-60
-                dark:border-green-900
+                  dark:border-green-900
                 dark:bg-green-950/30
                 dark:text-green-400
                 "
@@ -906,7 +906,7 @@ function Dashboard() {
             </div>
           </div>
 
-          <div className="grid gap-4 px-6 py-5 md:grid-cols-2 xl:grid-cols-[1fr_190px_190px_190px]">
+          <div className="grid gap-3 px-4 py-4 sm:gap-4 sm:px-6 sm:py-5 md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_180px_180px_180px]">
             <input
               type="text"
               placeholder="Search by item, category, amount, or date..."
@@ -914,7 +914,7 @@ function Dashboard() {
               onChange={(event) =>
                 setSearchTerm(event.target.value)
               }
-              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-blue-400 dark:focus:ring-blue-900"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 sm:px-4 sm:py-3 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-blue-400 dark:focus:ring-blue-900"
             />
 
             <select
@@ -924,7 +924,7 @@ function Dashboard() {
                   event.target.value
                 )
               }
-              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:focus:border-blue-400 dark:focus:ring-blue-900"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 sm:px-4 sm:py-3 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-blue-400 dark:focus:ring-blue-900"
             >
               <option value="ALL">
                 All categories
@@ -947,7 +947,7 @@ function Dashboard() {
                   event.target.value
                 )
               }
-              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:focus:border-blue-400 dark:focus:ring-blue-900"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 sm:px-4 sm:py-3 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-blue-400 dark:focus:ring-blue-900"
             >
               <option value="ALL">All time</option>
               <option value="TODAY">Today</option>
@@ -973,7 +973,7 @@ function Dashboard() {
               onChange={(event) =>
                 setSortBy(event.target.value)
               }
-              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:focus:border-blue-400 dark:focus:ring-blue-900"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 sm:px-4 sm:py-3 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-blue-400 dark:focus:ring-blue-900"
             >
               <option value="NEWEST">
                 Newest first
@@ -994,15 +994,16 @@ function Dashboard() {
 
           {expenses.length === 0 ? (
             <div className="px-6 py-16 text-center">
-              <div className="text-4xl">💰</div>
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400">
+                <ReceiptText size={26} />
+              </div>
 
-              <p className="mt-4 text-lg font-medium text-gray-700 dark:text-gray-200">
-                No expenses found
+              <p className="mt-5 text-lg font-semibold text-gray-800 dark:text-gray-100">
+                No expenses yet
               </p>
 
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                Add your first expense using the form
-                above.
+              <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-gray-500 dark:text-gray-400">
+                Add your first expense above to start tracking your spending and unlock analytics.
               </p>
             </div>
           ) : (
@@ -1095,21 +1096,17 @@ function Dashboard() {
                     ))
                   ) : (
                     <tr>
-                      <td
-                        colSpan="5"
-                        className="py-10 text-center"
-                      >
-                        <div className="text-4xl">
-                          🔍
+                      <td colSpan="5" className="py-12 text-center">
+                        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+                          <Search size={22} />
                         </div>
 
-                        <p className="mt-3 font-semibold text-gray-700 dark:text-gray-200">
+                        <p className="mt-4 font-semibold text-gray-700 dark:text-gray-200">
                           No matching expenses
                         </p>
 
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          Try changing or clearing
-                          your filters.
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                          Try changing your search, category, or date filters.
                         </p>
                       </td>
                     </tr>

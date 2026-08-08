@@ -21,18 +21,18 @@ function formatCurrency(value) {
 function AIInsights({ expenses = [] }) {
   if (expenses.length === 0) {
     return (
-      <section className="rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50 p-6 shadow-sm dark:border-blue-900/50 dark:from-blue-950/30 dark:to-indigo-950/30">
+      <section className="rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50 p-4 shadow-sm sm:p-6 dark:border-blue-900/50 dark:from-blue-950/30 dark:to-indigo-950/30">
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600 text-white">
-            <Brain size={22} />
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white sm:h-11 sm:w-11">
+            <Brain size={21} />
           </div>
 
-          <div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+          <div className="min-w-0">
+            <h3 className="text-lg font-semibold text-gray-900 sm:text-xl dark:text-white">
               AI Insights
             </h3>
 
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="mt-1 text-sm leading-5 text-gray-500 dark:text-gray-400">
               Add expenses to receive personalized insights.
             </p>
           </div>
@@ -95,28 +95,28 @@ function AIInsights({ expenses = [] }) {
   ];
 
   return (
-    <section className="rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50 p-6 shadow-sm dark:border-blue-900/50 dark:from-blue-950/30 dark:to-indigo-950/30">
+    <section className="rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50 p-4 shadow-sm sm:p-6 dark:border-blue-900/50 dark:from-blue-950/30 dark:to-indigo-950/30">
       <div className="flex items-center gap-3">
-        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm">
-          <Brain size={22} />
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm sm:h-11 sm:w-11">
+          <Brain size={21} />
         </div>
 
-        <div>
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+        <div className="min-w-0">
+          <h3 className="text-lg font-semibold text-gray-900 sm:text-xl dark:text-white">
             AI Insights
           </h3>
 
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="mt-1 text-sm leading-5 text-gray-500 dark:text-gray-400">
             Smart observations based on the active filters.
           </p>
         </div>
       </div>
 
-      <div className="mt-6 grid gap-4 md:grid-cols-3">
+      <div className="mt-5 grid grid-cols-1 gap-3 sm:mt-6 sm:gap-4 md:grid-cols-3">
         {insights.map((insight) => (
           <div
             key={insight.title}
-            className="rounded-xl border border-white/70 bg-white/80 p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-md dark:border-gray-800 dark:bg-gray-900/70"
+            className="min-w-0 rounded-xl border border-white/70 bg-white/80 p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md dark:border-gray-800 dark:bg-gray-900/70"
           >
             <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
               {insight.icon}
@@ -126,25 +126,25 @@ function AIInsights({ expenses = [] }) {
               </p>
             </div>
 
-            <p className="mt-2 font-semibold text-gray-900 dark:text-white">
+            <p className="mt-2 break-words text-sm font-semibold leading-6 text-gray-900 sm:text-base dark:text-white">
               {insight.value}
             </p>
           </div>
         ))}
       </div>
 
-      <div className="mt-5 flex items-start gap-3 rounded-xl bg-blue-600 px-4 py-4 text-white">
+      <div className="mt-4 flex items-start gap-3 rounded-xl bg-blue-600 px-4 py-4 text-white sm:mt-5">
         <Lightbulb
           size={20}
           className="mt-0.5 shrink-0"
         />
 
-        <div>
+        <div className="min-w-0">
           <p className="text-sm font-semibold">
             Smart recommendation
           </p>
 
-          <p className="mt-1 text-sm leading-6 text-blue-100">
+          <p className="mt-1 break-words text-sm leading-6 text-blue-100">
             {recommendation}
           </p>
         </div>

@@ -17,8 +17,9 @@ function MonthlyBarChart({ expenses = [] }) {
       return;
     }
 
-    // Prevent timezone issues with YYYY-MM-DD dates.
-    const date = new Date(`${expense.date}T00:00:00`);
+    const date = new Date(
+      `${expense.date}T00:00:00`
+    );
 
     if (Number.isNaN(date.getTime())) {
       return;
@@ -27,7 +28,6 @@ function MonthlyBarChart({ expenses = [] }) {
     const year = date.getFullYear();
     const monthNumber = date.getMonth();
 
-    // Unique key prevents Jun 2025 and Jun 2026 from merging.
     const monthKey = `${year}-${String(
       monthNumber + 1
     ).padStart(2, "0")}`;
@@ -39,47 +39,80 @@ function MonthlyBarChart({ expenses = [] }) {
           year: "2-digit",
         }),
         total: 0,
-        sortKey: new Date(year, monthNumber, 1).getTime(),
+        sortKey: new Date(
+          year,
+          monthNumber,
+          1
+        ).getTime(),
       };
     }
 
-    monthlyTotals[monthKey].total += Number(
-      expense.amount || 0
-    );
+    monthlyTotals[monthKey].total +=
+      Number(expense.amount || 0);
   });
 
   const data = Object.values(monthlyTotals)
-    .sort((a, b) => a.sortKey - b.sortKey)
+    .sort(
+      (first, second) =>
+        first.sortKey - second.sortKey
+    )
     .map(({ month, total }) => ({
       month,
       total,
     }));
 
   function formatCurrency(value) {
-    return `₹${Number(value).toLocaleString("en-IN", {
-      maximumFractionDigits: 0,
-    })}`;
+    return `₹${Number(value).toLocaleString(
+      "en-IN",
+      {
+        maximumFractionDigits: 0,
+      }
+    )}`;
+  }
+
+  function formatYAxis(value) {
+    const number = Number(value);
+
+    if (number >= 100000) {
+      return `₹${(
+        number / 100000
+      ).toFixed(1)}L`;
+    }
+
+    if (number >= 1000) {
+      return `₹${(
+        number / 1000
+      ).toFixed(1)}K`;
+    }
+
+    return `₹${number}`;
   }
 
   if (data.length === 0) {
     return (
-      <div className="flex h-96 items-center justify-center text-gray-500 dark:text-gray-400">
-        No monthly data available
+      <div className="flex h-72 items-center justify-center sm:h-96">
+        <p className="text-center text-sm text-gray-500 dark:text-gray-400">
+          No monthly data available
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="h-96">
-      <ResponsiveContainer width="100%" height="100%">
+    <div className="h-80 w-full sm:h-96">
+      <ResponsiveContainer
+        width="100%"
+        height="100%"
+      >
         <BarChart
           data={data}
           margin={{
-            top: 40,
-            right: 20,
-            left: 10,
-            bottom: 10,
+            top: 35,
+            right: 8,
+            left: 0,
+            bottom: 5,
           }}
+          barCategoryGap="25%"
         >
           <CartesianGrid
             vertical={false}
@@ -89,22 +122,30 @@ function MonthlyBarChart({ expenses = [] }) {
 
           <XAxis
             dataKey="month"
-            tick={{ fill: "#9CA3AF" }}
+            tick={{
+              fill: "#9CA3AF",
+              fontSize: 11,
+            }}
             axisLine={false}
             tickLine={false}
+            minTickGap={12}
           />
 
           <YAxis
-            tickFormatter={formatCurrency}
-            tick={{ fill: "#9CA3AF" }}
+            tickFormatter={formatYAxis}
+            tick={{
+              fill: "#9CA3AF",
+              fontSize: 11,
+            }}
             axisLine={false}
             tickLine={false}
-            width={75}
+            width={58}
           />
 
           <Tooltip
             cursor={{
-              fill: "rgba(59, 130, 246, 0.08)",
+              fill:
+                "rgba(59, 130, 246, 0.08)",
             }}
             formatter={(value) => [
               formatCurrency(value),
@@ -112,9 +153,11 @@ function MonthlyBarChart({ expenses = [] }) {
             ]}
             contentStyle={{
               backgroundColor: "#111827",
-              border: "1px solid #374151",
+              border:
+                "1px solid #374151",
               borderRadius: "12px",
               color: "#ffffff",
+              fontSize: "13px",
             }}
             labelStyle={{
               color: "#ffffff",
@@ -129,17 +172,17 @@ function MonthlyBarChart({ expenses = [] }) {
             dataKey="total"
             name="Spent"
             fill="#3B82F6"
-            radius={[10, 10, 0, 0]}
+            radius={[8, 8, 0, 0]}
             animationDuration={1200}
             animationEasing="ease-out"
-            maxBarSize={90}
+            maxBarSize={72}
           >
             <LabelList
               dataKey="total"
               position="top"
-              formatter={formatCurrency}
+              formatter={formatYAxis}
               fill="#D1D5DB"
-              fontSize={13}
+              fontSize={11}
             />
           </Bar>
         </BarChart>

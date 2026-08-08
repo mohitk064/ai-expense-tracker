@@ -57,7 +57,22 @@ function DeleteConfirmationModal({
             type="button"
             onClick={onCancel}
             disabled={deleting}
-            className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+            className="
+      rounded-lg
+      border border-gray-300
+      bg-white
+      px-4 py-2.5
+      text-sm font-semibold
+      text-gray-700
+      transition
+      hover:bg-gray-100
+      disabled:cursor-not-allowed
+      disabled:opacity-50
+      dark:border-gray-700
+      dark:bg-gray-800
+      dark:text-gray-200
+      dark:hover:bg-gray-700
+    "
           >
             Cancel
           </button>
@@ -66,7 +81,26 @@ function DeleteConfirmationModal({
             type="button"
             onClick={onConfirm}
             disabled={deleting}
-            className="flex items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+            className="
+      inline-flex
+      items-center
+      justify-center
+      gap-2
+      rounded-lg
+      bg-red-600
+      px-4 py-2.5
+      text-sm font-semibold
+      text-white
+      shadow-sm
+      transition-all
+      duration-200
+      hover:-translate-y-0.5
+      hover:bg-red-700
+      hover:shadow-md
+      disabled:cursor-not-allowed
+      disabled:opacity-60
+      disabled:hover:translate-y-0
+    "
           >
             <Trash2 size={17} />
 

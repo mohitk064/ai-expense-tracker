@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
+import { ChevronDown } from "lucide-react";
+import toast from "react-hot-toast";
 
 import {
   addExpense,
   updateExpense,
 } from "../services/ExpenseService";
-import { ChevronDown } from "lucide-react";
+
 const CATEGORIES = [
   "FOOD",
   "TRAVEL",
@@ -15,13 +17,14 @@ const CATEGORIES = [
   "EDUCATION",
   "OTHER",
 ];
-import toast from "react-hot-toast";
 
 function formatCategory(category) {
   return category
     .toLowerCase()
     .replace(/_/g, " ")
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+    .replace(/\b\w/g, (letter) =>
+      letter.toUpperCase()
+    );
 }
 
 function AddExpenseForm({
@@ -63,7 +66,7 @@ function AddExpenseForm({
     setError("");
 
     const expenseRequest = {
-      item,
+      item: item.trim(),
       amount: Number(amount),
       date,
       category,
@@ -73,26 +76,35 @@ function AddExpenseForm({
       setSubmitting(true);
 
       if (editingExpense) {
-        const updatedExpense = await updateExpense(
-          editingExpense.id,
-          expenseRequest
-        );
+        const updatedExpense =
+          await updateExpense(
+            editingExpense.id,
+            expenseRequest
+          );
 
         onExpenseUpdated(updatedExpense);
-        toast.success("Expense updated successfully!");
+
+        toast.success(
+          "Expense updated successfully!"
+        );
       } else {
         const savedExpense = await addExpense(
           expenseRequest
         );
 
         onExpenseAdded(savedExpense);
-        toast.success("Expense added successfully!");
+
+        toast.success(
+          "Expense added successfully!"
+        );
       }
 
       clearForm();
-
     } catch (error) {
-      console.error("Expense operation failed:", error);
+      console.error(
+        "Expense operation failed:",
+        error
+      );
 
       const message =
         error.response?.data?.message ??
@@ -100,7 +112,7 @@ function AddExpenseForm({
 
       setError(message);
       toast.error(message);
-    }finally {
+    } finally {
       setSubmitting(false);
     }
   }
@@ -110,8 +122,32 @@ function AddExpenseForm({
     onCancelEdit();
   }
 
-  const inputClassName =
-    "w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-blue-400 dark:focus:ring-blue-900";
+  const inputClassName = `
+    w-full
+    rounded-lg
+    border
+    border-gray-300
+    bg-white
+    px-3
+    py-2.5
+    text-sm
+    text-gray-900
+    outline-none
+    transition
+    placeholder:text-gray-400
+    focus:border-blue-500
+    focus:ring-2
+    focus:ring-blue-200
+    sm:px-4
+    sm:py-3
+    sm:text-base
+    dark:border-gray-700
+    dark:bg-gray-800
+    dark:text-white
+    dark:placeholder:text-gray-500
+    dark:focus:border-blue-400
+    dark:focus:ring-blue-900
+  `;
 
   const labelClassName =
     "mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300";
@@ -124,7 +160,8 @@ function AddExpenseForm({
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2">
+        {/* Item */}
         <div className="md:col-span-2">
           <label
             htmlFor="item"
@@ -142,10 +179,12 @@ function AddExpenseForm({
             }
             placeholder="Example: Dinner, Uber, Groceries"
             required
+            disabled={submitting}
             className={inputClassName}
           />
         </div>
 
+        {/* Category */}
         <div className="md:col-span-2">
           <label
             htmlFor="category"
@@ -162,31 +201,36 @@ function AddExpenseForm({
                 setCategory(event.target.value)
               }
               required
+              disabled={submitting}
               className={`${inputClassName} appearance-none pr-12`}
             >
-              <option value="">Select a category</option>
+              <option value="">
+                Select a category
+              </option>
 
-              {CATEGORIES.map((category) => (
-                <option key={category} value={category}>
-                  {formatCategory(category)}
-                </option>
-              ))}
+              {CATEGORIES.map(
+                (categoryOption) => (
+                  <option
+                    key={categoryOption}
+                    value={categoryOption}
+                  >
+                    {formatCategory(
+                      categoryOption
+                    )}
+                  </option>
+                )
+              )}
             </select>
 
             <ChevronDown
               size={18}
               aria-hidden="true"
-              className="
-        pointer-events-none
-        absolute right-5 top-1/2
-        -translate-y-1/2
-        text-gray-500
-        dark:text-gray-400
-      "
+              className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400"
             />
           </div>
         </div>
 
+        {/* Amount */}
         <div>
           <label
             htmlFor="amount"
@@ -206,10 +250,12 @@ function AddExpenseForm({
             min="0.01"
             step="0.01"
             required
+            disabled={submitting}
             className={inputClassName}
           />
         </div>
 
+        {/* Date */}
         <div>
           <label
             htmlFor="date"
@@ -226,17 +272,19 @@ function AddExpenseForm({
               setDate(event.target.value)
             }
             required
+            disabled={submitting}
             className={inputClassName}
           />
         </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:justify-end md:col-span-2">
+        {/* Actions */}
+        <div className="mt-1 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end md:col-span-2">
           {editingExpense && (
             <button
               type="button"
               onClick={handleCancel}
               disabled={submitting}
-              className="rounded-lg border border-gray-300 bg-white px-5 py-3 font-semibold text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+              className="w-full rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:py-3 sm:text-base dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
             >
               Cancel
             </button>
@@ -245,7 +293,7 @@ function AddExpenseForm({
           <button
             type="submit"
             disabled={submitting}
-            className="rounded-lg bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 disabled:cursor-not-allowed disabled:bg-blue-300 dark:disabled:bg-blue-900"
+            className="w-full rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300 disabled:cursor-not-allowed disabled:bg-blue-300 disabled:hover:translate-y-0 sm:w-auto sm:py-3 sm:text-base dark:disabled:bg-blue-900"
           >
             {submitting
               ? "Saving..."

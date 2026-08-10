@@ -1,4 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Download,
@@ -202,6 +207,8 @@ function Dashboard() {
   const [expenseToDelete, setExpenseToDelete] =
     useState(null);
   const [deleting, setDeleting] = useState(false);
+
+  const expenseFormRef = useRef(null);
 
   useEffect(() => {
     async function loadExpenses() {
@@ -499,10 +506,12 @@ function Dashboard() {
   function handleEdit(expense) {
     setEditingExpense(expense);
 
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
+    setTimeout(() => {
+      expenseFormRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }, 50);
   }
 
   function handleCancelEdit() {
@@ -807,7 +816,10 @@ function Dashboard() {
           <AIInsights expenses={filteredExpenses} />
         </div>
 
-        <section className="mb-8 rounded-2xl bg-white p-4 shadow-sm transition-colors sm:p-6 dark:bg-gray-900 dark:shadow-black/20">
+        <section
+          ref={expenseFormRef}
+          className="mb-8 scroll-mt-6 rounded-2xl bg-white p-4 shadow-sm transition-colors sm:p-6 dark:bg-gray-900 dark:shadow-black/20"
+        >
           <h3 className="mb-5 text-xl font-semibold text-gray-900 dark:text-white">
             {editingExpense
               ? "Update expense"
@@ -816,9 +828,7 @@ function Dashboard() {
 
           <AddExpenseForm
             onExpenseAdded={handleExpenseAdded}
-            onExpenseUpdated={
-              handleExpenseUpdated
-            }
+            onExpenseUpdated={handleExpenseUpdated}
             editingExpense={editingExpense}
             onCancelEdit={handleCancelEdit}
           />

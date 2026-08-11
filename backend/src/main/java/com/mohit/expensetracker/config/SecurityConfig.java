@@ -16,6 +16,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import static org.springframework.security.config.Customizer.withDefaults;
+
 @Configuration
 public class SecurityConfig {
 
@@ -31,8 +33,7 @@ public class SecurityConfig {
 
                 http
                                 .csrf(csrf -> csrf.disable())
-                                .cors(cors -> {
-                                })
+                                .cors(withDefaults())
 
                                 .sessionManagement(session -> session.sessionCreationPolicy(
                                                 SessionCreationPolicy.STATELESS))
@@ -67,14 +68,21 @@ public class SecurityConfig {
 
                 CorsConfiguration configuration = new CorsConfiguration();
 
-                configuration.setAllowedOrigins(
-                                List.of("http://localhost:5173"));
+                configuration.setAllowedOrigins(List.of(
+                                "http://localhost:5173",
+                                "https://ai-expense-tracker-plum.vercel.app"));
 
-                configuration.setAllowedMethods(
-                                List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                configuration.setAllowedMethods(List.of(
+                                "GET",
+                                "POST",
+                                "PUT",
+                                "DELETE",
+                                "PATCH",
+                                "OPTIONS"));
 
-                configuration.setAllowedHeaders(
-                                List.of("*"));
+                configuration.setAllowedHeaders(List.of(
+                                "Authorization",
+                                "Content-Type"));
 
                 configuration.setAllowCredentials(true);
 

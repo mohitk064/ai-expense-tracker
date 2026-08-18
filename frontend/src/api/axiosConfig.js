@@ -22,7 +22,7 @@ api.interceptors.response.use(
   (error) => {
     const status = error.response?.status;
 
-    if (status === 401 || status === 403) {
+    if (status === 401) {
       localStorage.removeItem("token");
 
       if (window.location.pathname !== "/login") {
@@ -32,7 +32,6 @@ api.interceptors.response.use(
 
     return Promise.reject(error);
   }
-
 );
 
 api.interceptors.response.use(

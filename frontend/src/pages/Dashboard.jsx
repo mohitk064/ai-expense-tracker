@@ -17,6 +17,7 @@ import {
   Trophy,
   WalletCards,
   Search,
+  User,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -615,6 +616,15 @@ function Dashboard() {
 
           <div className="flex items-center gap-3">
             <ThemeToggle />
+
+            <button
+              type="button"
+              onClick={() => navigate("/profile")}
+              className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm transition-all duration-200 hover:bg-gray-100 hover:shadow focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+            >
+              <User size={17} />
+              <span>Profile</span>
+            </button>
 
             <button
               type="button"

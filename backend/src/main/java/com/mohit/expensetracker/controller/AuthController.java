@@ -4,6 +4,7 @@ import com.mohit.expensetracker.dto.RegisterRequest;
 import com.mohit.expensetracker.dto.LoginRequest;
 import com.mohit.expensetracker.service.AuthService;
 
+
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
@@ -13,8 +14,11 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
   private final AuthService authService;
+  
 
-  public AuthController(AuthService authService) {
+  public AuthController(
+      AuthService authService) {
+
     this.authService = authService;
   }
 

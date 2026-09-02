@@ -9,6 +9,7 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
+import VerifyEmail from "./pages/VerifyEmail";
 
 function App() {
   return (
@@ -43,6 +44,11 @@ function App() {
       <Route
         path="*"
         element={<Navigate to="/dashboard" replace />}
+      />
+
+      <Route
+        path="/verify-email"
+        element={<VerifyEmail />}
       />
     </Routes>
   );

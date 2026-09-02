@@ -26,5 +26,7 @@ public class EmailVerificationOtp {
 
     private String otp;
 
+    private LocalDateTime createdAt;
+
     private LocalDateTime expiresAt;
 }

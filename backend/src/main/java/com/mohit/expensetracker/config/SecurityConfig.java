@@ -44,6 +44,8 @@ public class SecurityConfig {
                                                                 "/hello",
                                                                 "/api/auth/register",
                                                                 "/api/auth/login",
+                                                                "/api/auth/verify-email",
+                                                                "/api/auth/resend-otp",
                                                                 "/error",
                                                                 "/swagger-ui/**",
                                                                 "/swagger-ui.html",

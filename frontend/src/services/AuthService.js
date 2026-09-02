@@ -17,3 +17,21 @@ export async function register(registerRequest) {
 
   return response.data;
 }
+
+export async function verifyEmail(payload) {
+  const response = await api.post(
+    "/api/auth/verify-email",
+    payload
+  );
+
+  return response.data;
+}
+
+export async function resendVerificationOtp(payload) {
+  const response = await api.post(
+    "/api/auth/resend-otp",
+    payload
+  );
+
+  return response.data;
+}

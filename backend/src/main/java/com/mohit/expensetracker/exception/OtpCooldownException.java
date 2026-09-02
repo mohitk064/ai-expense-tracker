@@ -1,0 +1,8 @@
+package com.mohit.expensetracker.exception;
+
+public class OtpCooldownException extends RuntimeException {
+
+    public OtpCooldownException(String message) {
+        super(message);
+    }
+}

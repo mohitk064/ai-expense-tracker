@@ -13,48 +13,66 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(ExpenseNotFoundException.class)
-    public ResponseEntity<Map<String, String>> handleExpenseNotFound(
-            ExpenseNotFoundException exception) {
+        @ExceptionHandler(ExpenseNotFoundException.class)
+        public ResponseEntity<Map<String, String>> handleExpenseNotFound(
+                        ExpenseNotFoundException exception) {
 
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(Map.of("message", exception.getMessage()));
-    }
+                return ResponseEntity
+                                .status(HttpStatus.NOT_FOUND)
+                                .body(Map.of("message", exception.getMessage()));
+        }
 
-    @ExceptionHandler(UnauthorizedExpenseAccessException.class)
-    public ResponseEntity<Map<String, String>> handleUnauthorizedExpenseAccess(
-            UnauthorizedExpenseAccessException exception) {
+        @ExceptionHandler(UnauthorizedExpenseAccessException.class)
+        public ResponseEntity<Map<String, String>> handleUnauthorizedExpenseAccess(
+                        UnauthorizedExpenseAccessException exception) {
 
-        return ResponseEntity
-                .status(HttpStatus.FORBIDDEN)
-                .body(Map.of("message", exception.getMessage()));
-    }
+                return ResponseEntity
+                                .status(HttpStatus.FORBIDDEN)
+                                .body(Map.of("message", exception.getMessage()));
+        }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidationErrors(
-            MethodArgumentNotValidException exception) {
+        @ExceptionHandler(MethodArgumentNotValidException.class)
+        public ResponseEntity<Map<String, Object>> handleValidationErrors(
+                        MethodArgumentNotValidException exception) {
 
-        Map<String, String> errors = new HashMap<>();
+                Map<String, String> errors = new HashMap<>();
 
-        exception.getBindingResult()
-                .getAllErrors()
-                .forEach(error -> {
+                exception.getBindingResult()
+                                .getAllErrors()
+                                .forEach(error -> {
 
-                    String fieldName = ((FieldError) error).getField();
+                                        String fieldName = ((FieldError) error).getField();
 
-                    String errorMessage = error.getDefaultMessage();
+                                        String errorMessage = error.getDefaultMessage();
 
-                    errors.put(fieldName, errorMessage);
-                });
+                                        errors.put(fieldName, errorMessage);
+                                });
 
-        Map<String, Object> response = new HashMap<>();
+                Map<String, Object> response = new HashMap<>();
 
-        response.put("message", "Validation failed");
-        response.put("errors", errors);
+                response.put("message", "Validation failed");
+                response.put("errors", errors);
 
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(response);
-    }
+                return ResponseEntity
+                                .status(HttpStatus.BAD_REQUEST)
+                                .body(response);
+        }
+
+        @ExceptionHandler(OtpCooldownException.class)
+        public ResponseEntity<String> handleOtpCooldownException(
+                        OtpCooldownException ex) {
+
+                return ResponseEntity
+                                .status(HttpStatus.TOO_MANY_REQUESTS)
+                                .body(ex.getMessage());
+        }
+
+        @ExceptionHandler(EmailNotVerifiedException.class)
+        public ResponseEntity<String> handleEmailNotVerified(
+                        EmailNotVerifiedException ex) {
+
+                return ResponseEntity
+                                .status(HttpStatus.FORBIDDEN)
+                                .body(ex.getMessage());
+        }
 }

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import com.mohit.expensetracker.dto.LoginRequest;
 import com.mohit.expensetracker.dto.RegisterRequest;
 import com.mohit.expensetracker.entity.User;
+import com.mohit.expensetracker.exception.EmailNotVerifiedException;
 import com.mohit.expensetracker.exception.InvalidCredentialsException;
 import com.mohit.expensetracker.repository.UserRepository;
 
@@ -17,14 +18,14 @@ public class AuthService {
   private final JwtService jwtService;
 
   public AuthService(
-        UserRepository userRepository,
-        PasswordEncoder passwordEncoder,
-        JwtService jwtService) {
+      UserRepository userRepository,
+      PasswordEncoder passwordEncoder,
+      JwtService jwtService) {
 
     this.userRepository = userRepository;
     this.passwordEncoder = passwordEncoder;
     this.jwtService = jwtService;
-}
+  }
 
   public void register(RegisterRequest request) {
 
@@ -58,7 +59,12 @@ public class AuthService {
     if (!passwordMatches) {
       throw new InvalidCredentialsException("Invalid email or password");
     }
-    
+
+    if (!user.isEmailVerified()) {
+      throw new EmailNotVerifiedException(
+          "Please verify your email before logging in");
+    }
+
     return jwtService.generateToken(user.getEmail());
   }
 }

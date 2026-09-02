@@ -21,7 +21,7 @@ function Register() {
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] =
     useState("");
-  const [dob, setDob] = useState("");
+  const [dateOfBirth, setDob] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] =
     useState("");
@@ -46,7 +46,7 @@ function Register() {
       name,
       email,
       phoneNumber,
-      dob,
+      dateOfBirth,
       password,
       confirmPassword,
     };
@@ -56,13 +56,13 @@ function Register() {
 
       await register(registerRequest);
 
-      navigate("/login", {
+      navigate("/verify-email", {
         replace: true,
         state: {
-          message:
-            "Registration successful. Please log in.",
+          email: registerRequest.email,
         },
       });
+
     } catch (error) {
       console.error("Registration failed:", error);
 
@@ -70,6 +70,7 @@ function Register() {
         error.response?.data?.message ??
         "Unable to create account"
       );
+
     } finally {
       setSubmitting(false);
     }
@@ -208,7 +209,7 @@ function Register() {
             <input
               id="dob"
               type="date"
-              value={dob}
+              value={dateOfBirth}
               onChange={(event) =>
                 setDob(event.target.value)
               }

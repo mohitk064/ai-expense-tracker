@@ -274,7 +274,12 @@ function AddExpenseForm({
               onChange={(event) => setDate(event.target.value)}
               required
               disabled={submitting}
-              className={`${inputClassName} appearance-none pr-11`}
+              className={`
+    ${inputClassName}
+    appearance-none
+    pr-11
+    [&::-webkit-calendar-picker-indicator]:opacity-0
+  `}
               style={{
                 WebkitAppearance: "none",
                 minWidth: 0,

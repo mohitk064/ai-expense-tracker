@@ -396,30 +396,18 @@ function Field({
       {type === "date" ? (
         <div className="relative w-full min-w-0 max-w-full overflow-hidden">
           <input
-            name={name}
+            id="date"
             type="date"
-            value={value}
-            onChange={onChange}
-            className="
-        block
-        box-border
-        w-full
-        min-w-0
-        max-w-full
-        appearance-none
-        rounded-xl
-        border
-        border-slate-700
-        bg-slate-800
-        px-4
-        py-3
-        pr-11
-        text-base
-        text-white
-        outline-none
-        transition
-        focus:border-blue-500
-      "
+            value={date}
+            onChange={(event) => setDate(event.target.value)}
+            required
+            disabled={submitting}
+            className={`
+    ${inputClassName}
+    appearance-none
+    pr-11
+    [&::-webkit-calendar-picker-indicator]:opacity-0
+  `}
             style={{
               WebkitAppearance: "none",
               minWidth: 0,

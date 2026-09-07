@@ -396,12 +396,11 @@ function Field({
       {type === "date" ? (
         <div className="relative w-full min-w-0 max-w-full overflow-hidden">
           <input
-            id="date"
+            name={name}
             type="date"
-            value={date}
-            onChange={(event) => setDate(event.target.value)}
+            value={value}
+            onChange={onChange}
             required
-            disabled={submitting}
             className={`
     ${inputClassName}
     appearance-none

@@ -266,32 +266,27 @@ function AddExpenseForm({
             Date
           </label>
 
-          <div className="relative min-w-0 w-full">
+          <div className="relative w-full min-w-0 max-w-full overflow-hidden">
             <input
               id="date"
               type="date"
               value={date}
-              onChange={(event) =>
-                setDate(event.target.value)
-              }
+              onChange={(event) => setDate(event.target.value)}
               required
               disabled={submitting}
-              className={`
-        ${inputClassName}
-        pr-10
-        [&::-webkit-calendar-picker-indicator]:absolute
-        [&::-webkit-calendar-picker-indicator]:right-3
-        [&::-webkit-calendar-picker-indicator]:h-5
-        [&::-webkit-calendar-picker-indicator]:w-5
-        [&::-webkit-calendar-picker-indicator]:cursor-pointer
-        [&::-webkit-calendar-picker-indicator]:opacity-0
-      `}
+              className={`${inputClassName} appearance-none pr-11`}
+              style={{
+                WebkitAppearance: "none",
+                minWidth: 0,
+                width: "100%",
+                maxWidth: "100%",
+              }}
             />
 
             <Calendar
               size={18}
               aria-hidden="true"
-              className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400"
+              className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400"
             />
           </div>
         </div>

@@ -394,29 +394,44 @@ function Field({
       </label>
 
       {type === "date" ? (
-        <div className="relative min-w-0 w-full">
+        <div className="relative w-full min-w-0 max-w-full overflow-hidden">
           <input
             name={name}
-            type={type}
-            step={step}
+            type="date"
             value={value}
             onChange={onChange}
-            className={`
-              ${inputClassName}
-              pr-10
-              [&::-webkit-calendar-picker-indicator]:absolute
-              [&::-webkit-calendar-picker-indicator]:right-3
-              [&::-webkit-calendar-picker-indicator]:h-5
-              [&::-webkit-calendar-picker-indicator]:w-5
-              [&::-webkit-calendar-picker-indicator]:cursor-pointer
-              [&::-webkit-calendar-picker-indicator]:opacity-0
-            `}
+            className="
+        block
+        box-border
+        w-full
+        min-w-0
+        max-w-full
+        appearance-none
+        rounded-xl
+        border
+        border-slate-700
+        bg-slate-800
+        px-4
+        py-3
+        pr-11
+        text-base
+        text-white
+        outline-none
+        transition
+        focus:border-blue-500
+      "
+            style={{
+              WebkitAppearance: "none",
+              minWidth: 0,
+              width: "100%",
+              maxWidth: "100%",
+            }}
           />
 
           <Calendar
             size={18}
             aria-hidden="true"
-            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+            className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"
           />
         </div>
       ) : (

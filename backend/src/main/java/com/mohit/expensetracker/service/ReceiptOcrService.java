@@ -11,82 +11,84 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 public class ReceiptOcrService {
 
-    public String extractText(MultipartFile file) {
+        public String extractText(MultipartFile file) {
 
-        File tempFile = null;
+                File tempFile = null;
 
-        try {
-            String originalFilename = file.getOriginalFilename();
+                try {
+                        String originalFilename = file.getOriginalFilename();
 
-            String extension = ".jpg";
+                        String extension = ".jpg";
 
-            if (originalFilename != null &&
-                    originalFilename.contains(".")) {
+                        if (originalFilename != null &&
+                                        originalFilename.contains(".")) {
 
-                extension = originalFilename.substring(
-                        originalFilename.lastIndexOf(".")
-                );
-            }
+                                extension = originalFilename.substring(
+                                                originalFilename.lastIndexOf("."));
+                        }
 
-            tempFile = Files.createTempFile(
-                    "receipt-",
-                    extension
-            ).toFile();
+                        tempFile = Files.createTempFile(
+                                        "receipt-",
+                                        extension).toFile();
 
-            file.transferTo(tempFile);
+                        file.transferTo(tempFile);
 
-            ProcessBuilder processBuilder =
-                    new ProcessBuilder(
-                            "tesseract",
-                            tempFile.getAbsolutePath(),
-                            "stdout"
-                    );
+                        ProcessBuilder processBuilder = new ProcessBuilder(
+                                        "tesseract",
+                                        tempFile.getAbsolutePath(),
+                                        "stdout");
 
-            processBuilder.redirectErrorStream(true);
+                        Process process = processBuilder.start();
 
-            Process process = processBuilder.start();
+                        StringBuilder output = new StringBuilder();
+                        StringBuilder errorOutput = new StringBuilder();
 
-            BufferedReader reader =
-                    new BufferedReader(
-                            new InputStreamReader(
-                                    process.getInputStream()
-                            )
-                    );
+                        try (
+                                        BufferedReader outputReader = new BufferedReader(
+                                                        new InputStreamReader(
+                                                                        process.getInputStream()));
 
-            StringBuilder output =
-                    new StringBuilder();
+                                        BufferedReader errorReader = new BufferedReader(
+                                                        new InputStreamReader(
+                                                                        process.getErrorStream()))) {
+                                String line;
 
-            String line;
+                                while ((line = outputReader.readLine()) != null) {
+                                        output.append(line)
+                                                        .append(System.lineSeparator());
+                                }
 
-            while ((line = reader.readLine()) != null) {
-                output.append(line)
-                        .append(System.lineSeparator());
-            }
+                                while ((line = errorReader.readLine()) != null) {
+                                        errorOutput.append(line)
+                                                        .append(System.lineSeparator());
+                                }
+                        }
 
-            int exitCode = process.waitFor();
+                        int exitCode = process.waitFor();
 
-            if (exitCode != 0) {
-                throw new RuntimeException(
-                        "Tesseract OCR failed"
-                );
-            }
+                        if (exitCode != 0) {
+                                throw new RuntimeException(
+                                                "Tesseract OCR failed. Exit code: "
+                                                                + exitCode
+                                                                + ". Error: "
+                                                                + errorOutput.toString().trim());
+                        }
 
-            return output.toString().trim();
+                        return output.toString().trim();
 
-        } catch (Exception e) {
+                } catch (Exception e) {
 
-            throw new RuntimeException(
-                    "Failed to process receipt image",
-                    e
-            );
+                        throw new RuntimeException(
+                                        "Failed to process receipt image",
+                                        e);
 
-        } finally {
+                } finally {
 
-            if (tempFile != null &&
-                    tempFile.exists()) {
+                        if (tempFile != null &&
+                                        tempFile.exists()) {
 
-                tempFile.delete();
-            }
+                                tempFile.delete();
+                        }
+                }
         }
-    }
 }

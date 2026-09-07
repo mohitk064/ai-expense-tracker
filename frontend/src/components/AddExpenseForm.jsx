@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Calendar } from "lucide-react";
 import toast from "react-hot-toast";
 
 import {
@@ -123,46 +123,48 @@ function AddExpenseForm({
   }
 
   const inputClassName = `
-    w-full
-    rounded-lg
-    border
-    border-gray-300
-    bg-white
-    px-3
-    py-2.5
-    text-sm
-    text-gray-900
-    outline-none
-    transition
-    placeholder:text-gray-400
-    focus:border-blue-500
-    focus:ring-2
-    focus:ring-blue-200
-    sm:px-4
-    sm:py-3
-    sm:text-base
-    dark:border-gray-700
-    dark:bg-gray-800
-    dark:text-white
-    dark:placeholder:text-gray-500
-    dark:focus:border-blue-400
-    dark:focus:ring-blue-900
-  `;
+  box-border
+  w-full
+  min-w-0
+  max-w-full
+  rounded-lg
+  border
+  border-gray-300
+  bg-white
+  px-3
+  py-2.5
+  text-base
+  text-gray-900
+  outline-none
+  transition
+  placeholder:text-gray-400
+  focus:border-blue-500
+  focus:ring-2
+  focus:ring-blue-200
+  sm:px-4
+  sm:py-3
+  dark:border-gray-700
+  dark:bg-gray-800
+  dark:text-white
+  dark:placeholder:text-gray-500
+  dark:focus:border-blue-400
+  dark:focus:ring-blue-900
+`;
 
   const labelClassName =
     "mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300";
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="min-w-0 w-full">
       {error && (
         <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
           {error}
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2">
+      <div className="grid min-w-0 grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2">
         {/* Item */}
-        <div className="md:col-span-2">
+        <div className="min-w-0 md:col-span-2">
           <label
             htmlFor="item"
             className={labelClassName}
@@ -185,7 +187,7 @@ function AddExpenseForm({
         </div>
 
         {/* Category */}
-        <div className="md:col-span-2">
+        <div className="min-w-0 md:col-span-2">
           <label
             htmlFor="category"
             className={labelClassName}
@@ -193,7 +195,7 @@ function AddExpenseForm({
             Category
           </label>
 
-          <div className="relative">
+          <div className="relative min-w-0">
             <select
               id="category"
               value={category}
@@ -231,7 +233,7 @@ function AddExpenseForm({
         </div>
 
         {/* Amount */}
-        <div>
+        <div className="min-w-0">
           <label
             htmlFor="amount"
             className={labelClassName}
@@ -256,7 +258,7 @@ function AddExpenseForm({
         </div>
 
         {/* Date */}
-        <div>
+        <div className="min-w-0">
           <label
             htmlFor="date"
             className={labelClassName}
@@ -264,17 +266,34 @@ function AddExpenseForm({
             Date
           </label>
 
-          <input
-            id="date"
-            type="date"
-            value={date}
-            onChange={(event) =>
-              setDate(event.target.value)
-            }
-            required
-            disabled={submitting}
-            className={inputClassName}
-          />
+          <div className="relative min-w-0 w-full">
+            <input
+              id="date"
+              type="date"
+              value={date}
+              onChange={(event) =>
+                setDate(event.target.value)
+              }
+              required
+              disabled={submitting}
+              className={`
+        ${inputClassName}
+        pr-10
+        [&::-webkit-calendar-picker-indicator]:absolute
+        [&::-webkit-calendar-picker-indicator]:right-3
+        [&::-webkit-calendar-picker-indicator]:h-5
+        [&::-webkit-calendar-picker-indicator]:w-5
+        [&::-webkit-calendar-picker-indicator]:cursor-pointer
+        [&::-webkit-calendar-picker-indicator]:opacity-0
+      `}
+            />
+
+            <Calendar
+              size={18}
+              aria-hidden="true"
+              className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400"
+            />
+          </div>
         </div>
 
         {/* Actions */}

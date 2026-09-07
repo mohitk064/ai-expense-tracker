@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
+  Calendar,
   CheckCircle2,
   FileImage,
   ScanLine,
@@ -265,7 +266,7 @@ export default function ReceiptUpload() {
             </button>
           </div>
 
-          <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-xl">
+          <div className="min-w-0 rounded-2xl border border-slate-800 bg-slate-900 p-4 shadow-xl sm:p-6">
 
             <div className="flex items-center gap-2">
               <CheckCircle2
@@ -300,7 +301,7 @@ export default function ReceiptUpload() {
                 </div>
               </div>
             ) : (
-              <div className="mt-6 space-y-5">
+              <div className="mt-6 min-w-0 space-y-5">
 
                 <Field
                   label="Merchant"
@@ -326,7 +327,7 @@ export default function ReceiptUpload() {
                   onChange={handleChange}
                 />
 
-                <div>
+                <div className="min-w-0">
                   <label className="mb-2 block text-sm font-medium text-slate-300">
                     Category
                   </label>
@@ -335,7 +336,7 @@ export default function ReceiptUpload() {
                     name="category"
                     value={formData.category}
                     onChange={handleChange}
-                    className="w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-white outline-none transition focus:border-blue-500"
+                    className="box-border w-full min-w-0 max-w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-base text-white outline-none transition focus:border-blue-500"
                   >
                     {categories.map((category) => (
                       <option
@@ -383,20 +384,51 @@ function Field({
   value,
   onChange,
 }) {
+  const inputClassName =
+    "box-border w-full min-w-0 max-w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-base text-white outline-none transition focus:border-blue-500";
+
   return (
-    <div>
+    <div className="min-w-0">
       <label className="mb-2 block text-sm font-medium text-slate-300">
         {label}
       </label>
 
-      <input
-        name={name}
-        type={type}
-        step={step}
-        value={value}
-        onChange={onChange}
-        className="w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-white outline-none transition focus:border-blue-500"
-      />
+      {type === "date" ? (
+        <div className="relative min-w-0 w-full">
+          <input
+            name={name}
+            type={type}
+            step={step}
+            value={value}
+            onChange={onChange}
+            className={`
+              ${inputClassName}
+              pr-10
+              [&::-webkit-calendar-picker-indicator]:absolute
+              [&::-webkit-calendar-picker-indicator]:right-3
+              [&::-webkit-calendar-picker-indicator]:h-5
+              [&::-webkit-calendar-picker-indicator]:w-5
+              [&::-webkit-calendar-picker-indicator]:cursor-pointer
+              [&::-webkit-calendar-picker-indicator]:opacity-0
+            `}
+          />
+
+          <Calendar
+            size={18}
+            aria-hidden="true"
+            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+          />
+        </div>
+      ) : (
+        <input
+          name={name}
+          type={type}
+          step={step}
+          value={value}
+          onChange={onChange}
+          className={inputClassName}
+        />
+      )}
     </div>
   );
 }

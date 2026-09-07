@@ -91,7 +91,7 @@ function Register() {
         </div>
         <div className="mb-8 text-center">
           <div className="flex items-center justify-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 text-white shadow-lg shadow-blue-600/20">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-linear-to-br from-blue-500 to-blue-700 text-white shadow-lg shadow-blue-600/20">
               <WalletCards size={24} />
             </div>
 

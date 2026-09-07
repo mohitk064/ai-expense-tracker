@@ -18,6 +18,8 @@ import {
   WalletCards,
   Search,
   User,
+  ScanLine,
+  Plus,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -614,25 +616,56 @@ function Dashboard() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
             <ThemeToggle />
 
             <button
               type="button"
-              onClick={() => navigate("/profile")}
-              className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm transition-all duration-200 hover:bg-gray-100 hover:shadow focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+              onClick={() => {
+                expenseFormRef.current?.scrollIntoView({
+                  behavior: "smooth",
+                  block: "start",
+                });
+              }}
+              className="flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 sm:px-4"
             >
-              <User size={17} />
-              <span>Profile</span>
+              <Plus size={16} />
+              <span className="hidden sm:inline">
+                Add Expense
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigate("/receipts")}
+              className="flex items-center gap-2 rounded-lg border border-blue-500/30 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20 sm:px-4"
+            >
+              <ScanLine size={16} />
+              <span className="hidden sm:inline">
+                Scan Receipt
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigate("/profile")}
+              className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700 sm:px-4"
+            >
+              <User size={16} />
+              <span className="hidden sm:inline">
+                Profile
+              </span>
             </button>
 
             <button
               type="button"
               onClick={handleLogout}
-              className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm transition-all duration-200 hover:bg-gray-100 hover:shadow focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+              className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700 sm:px-4"
             >
-              <LogOut size={17} />
-              <span>Logout</span>
+              <LogOut size={16} />
+              <span className="hidden sm:inline">
+                Logout
+              </span>
             </button>
           </div>
         </div>

@@ -11,6 +11,7 @@ import Profile from "./pages/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
 import VerifyEmail from "./pages/VerifyEmail";
 import ReceiptUpload from "./pages/ReceiptUpload";
+import AiCoach from "./pages/AiCoach";
 
 function App() {
   return (
@@ -57,6 +58,14 @@ function App() {
         element={
           <ProtectedRoute>
             <ReceiptUpload />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/ai-coach"
+        element={
+          <ProtectedRoute>
+            <AiCoach />
           </ProtectedRoute>
         }
       />

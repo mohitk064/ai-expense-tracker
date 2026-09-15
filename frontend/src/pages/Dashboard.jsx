@@ -20,6 +20,9 @@ import {
   User,
   ScanLine,
   Plus,
+  BrainCircuit,
+  Sparkles,
+  ChevronRight,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -574,6 +577,7 @@ function Dashboard() {
 
   function handleLogout() {
     localStorage.removeItem("token");
+    sessionStorage.removeItem("expenseai-ai-coach");
 
     toast.success("Logged out successfully");
 
@@ -709,6 +713,106 @@ function Dashboard() {
           />
 
           <AIScoreCard expenses={filteredExpenses} />
+        </section>
+
+        {/* AI Financial Coach */}
+        <section className="mb-8">
+          <button
+            type="button"
+            onClick={() => navigate("/ai-coach")}
+            className="
+      group
+      flex
+      w-full
+      items-center
+      justify-between
+      rounded-2xl
+      border
+      border-blue-200
+      bg-white
+      p-5
+      text-left
+      shadow-sm
+      transition-all
+      duration-200
+      hover:-translate-y-0.5
+      hover:border-blue-300
+      hover:shadow-md
+      focus:outline-none
+      focus:ring-2
+      focus:ring-blue-500/30
+      sm:p-6
+      dark:border-blue-500/20
+      dark:bg-gray-900
+      dark:hover:border-blue-500/40
+      dark:shadow-black/20
+    "
+          >
+            <div className="flex min-w-0 items-center gap-4">
+              <div
+                className="
+          flex
+          h-12
+          w-12
+          shrink-0
+          items-center
+          justify-center
+          rounded-xl
+          bg-blue-600
+          text-white
+          shadow-sm
+          transition
+          group-hover:bg-blue-500
+        "
+              >
+                <BrainCircuit size={24} />
+              </div>
+
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="font-semibold text-gray-900 dark:text-white">
+                    AI Financial Coach
+                  </h3>
+
+                  <span
+                    className="
+              inline-flex
+              items-center
+              gap-1
+              rounded-full
+              bg-blue-50
+              px-2
+              py-1
+              text-xs
+              font-medium
+              text-blue-600
+              dark:bg-blue-500/10
+              dark:text-blue-400
+            "
+                  >
+                    <Sparkles size={12} />
+                    AI powered
+                  </span>
+                </div>
+
+                <p className="mt-1 text-sm leading-6 text-gray-500 dark:text-gray-400">
+                  Get personalized insights and practical recommendations
+                  based on your spending.
+                </p>
+              </div>
+            </div>
+
+            <div className="ml-4 flex shrink-0 items-center gap-1 text-blue-600 dark:text-blue-400">
+              <span className="hidden text-sm font-semibold sm:inline">
+                View insights
+              </span>
+
+              <ChevronRight
+                size={20}
+                className="transition-transform duration-200 group-hover:translate-x-1"
+              />
+            </div>
+          </button>
         </section>
 
         <section className="mb-8 grid gap-6 lg:grid-cols-3">

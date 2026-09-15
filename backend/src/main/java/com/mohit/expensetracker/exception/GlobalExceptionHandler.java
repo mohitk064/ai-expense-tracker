@@ -10,6 +10,10 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+
+import com.mohit.expensetracker.dto.ApiResponse;
+
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -74,5 +78,19 @@ public class GlobalExceptionHandler {
                 return ResponseEntity
                                 .status(HttpStatus.FORBIDDEN)
                                 .body(ex.getMessage());
+        }
+
+        @ExceptionHandler(AiServiceUnavailableException.class)
+        public ResponseEntity<ApiResponse<Void>> handleAiServiceUnavailable(
+                        AiServiceUnavailableException exception) {
+
+                ApiResponse<Void> response = new ApiResponse<>(
+                                false,
+                                exception.getMessage(),
+                                null);
+
+                return ResponseEntity
+                                .status(HttpStatus.SERVICE_UNAVAILABLE)
+                                .body(response);
         }
 }

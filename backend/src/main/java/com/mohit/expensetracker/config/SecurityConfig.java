@@ -15,8 +15,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-import static org.springframework.security.config.Customizer.withDefaults;
+import org.springframework.security.config.Customizer;
+import org.springframework.http.HttpMethod;
 
 @Configuration
 public class SecurityConfig {
@@ -33,12 +33,13 @@ public class SecurityConfig {
 
                 http
                                 .csrf(csrf -> csrf.disable())
-                                .cors(withDefaults())
+                                .cors(Customizer.withDefaults())
 
                                 .sessionManagement(session -> session.sessionCreationPolicy(
                                                 SessionCreationPolicy.STATELESS))
 
                                 .authorizeHttpRequests(auth -> auth
+                                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                                                 .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                                                 .requestMatchers(
                                                                 "/hello",
@@ -70,10 +71,11 @@ public class SecurityConfig {
 
                 CorsConfiguration configuration = new CorsConfiguration();
 
-                configuration.setAllowedOrigins(List.of(
+                configuration.setAllowedOriginPatterns(List.of(
                                 "http://localhost:5173",
                                 "http://localhost:5174",
-                                "https://ai-expense-tracker-plum.vercel.app"));
+                                "https://ai-expense-tracker-plum.vercel.app",
+                                "https://ai-expense-tracker-*.vercel.app"));
 
                 configuration.setAllowedMethods(List.of(
                                 "GET",

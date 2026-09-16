@@ -23,6 +23,12 @@ https://ai-expense-tracker-bcfa.onrender.com/swagger-ui/index.html
 
 ## Screenshots
 
+### Register
+![register](docs/screenshots/register.png)
+
+### Login
+![login](docs/screenshots/login.png)
+
 ### Dashboard
 ![Dashboard](docs/screenshots/dashboard.png)
 

@@ -56,8 +56,17 @@ public class JwtService {
 
         public boolean isTokenValid(String token) {
                 try {
-                        Date expirationDate = extractAllClaims(token).getExpiration();
-                        return expirationDate.after(new Date());
+
+                        Claims claims = extractAllClaims(token);
+
+                        String email = claims.getSubject();
+                        Date expirationDate = claims.getExpiration();
+
+                        return email != null
+                                        && !email.isBlank()
+                                        && expirationDate != null
+                                        && expirationDate.after(new Date());
+
                 } catch (JwtException | IllegalArgumentException exception) {
                         return false;
                 }

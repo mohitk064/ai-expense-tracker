@@ -74,8 +74,7 @@ public class SecurityConfig {
                 configuration.setAllowedOriginPatterns(List.of(
                                 "http://localhost:5173",
                                 "http://localhost:5174",
-                                "https://ai-expense-tracker-plum.vercel.app",
-                                "https://ai-expense-tracker-*.vercel.app"));
+                                "https://ai-expense-tracker-plum.vercel.app"));
 
                 configuration.setAllowedMethods(List.of(
                                 "GET",
